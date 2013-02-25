@@ -66,7 +66,7 @@ var methods = {
 			 		placeholderText: $this.attr('data-ra-placeholder'),
 			 		source: (($this.attr('data-ra-source') != null) && ($this.attr('data-ra-source') != "")) ? $this.attr('data-ra-source') : undefined,
 			 		multiple: $this.attr('data-ra-multiple'),
-			 		multiple_unique: $this.attr('data-ra-multiple-unique')
+			 		multiple_unique: $this.attr('data-ra-multiple-unique') != "false"
 			 	});
 			 	
 			 	// campos comuns para todos tipos de inputs
@@ -167,10 +167,6 @@ var methods = {
 					minLength: options_current.minLength,
 					source: options_current.source,
 				
-					focus: function( event, ui ) {
-						//$inputField.val( ui.item.label );
-						return false;
-					},
 					select: function( event, ui ) {
 						$this.richAutocomplete('select', ui.item);
 						return false;
