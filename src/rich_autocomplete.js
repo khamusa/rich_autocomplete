@@ -45,13 +45,11 @@ var methods = {
 	 	 	minLength: 2,	// jquery-ui parameter, how many characters does the user has to type before receiving suggestions?
 	 	 	multiple: false,	// type = single or multiple? Allows user to select many objects, or just one?
 	 	 	
+	 	 	additionalInput: null,	// format: { input: "<input>", params: {}}
 	 	 	placeholderText: "Comece a digitar...", // straight-forward
 	 	 	deselectLink: "<a class='close'>X</a>", // just the html, so you may customize it
-
 	 	 	// only for type = multiple
-	 	 	multiple_unique: true,		// if set to false the autocomplete will accept duplicate values selected
-	 	 	valuePassing: "json"	
-	 	 		// json or array = If set to json, the selected object will be passed as a json string, otherwise the input field will be duplicated so that the selected values will be passed as an array	
+	 	 	acceptsDuplicates: true,		// if set to false the autocomplete will accept duplicate values selected
 	 	 }; // end default_options
 	 	 
 	 	 options = $.extend(default_options, options);
@@ -66,7 +64,7 @@ var methods = {
 			 		placeholderText: $this.attr('data-ra-placeholder'),
 			 		source: (($this.attr('data-ra-source') != null) && ($this.attr('data-ra-source') != "")) ? $this.attr('data-ra-source') : undefined,
 			 		multiple: $this.attr('data-ra-multiple'),
-			 		multiple_unique: $this.attr('data-ra-multiple-unique') != "false"
+			 		acceptsDuplicates: $this.attr('data-ra-multiple-unique') != "false"
 			 	});
 			 	
 			 	// campos comuns para todos tipos de inputs
@@ -134,6 +132,10 @@ var methods = {
 					var $selected = null;
 				}
 				
+				if (($selected == null)||(options_current.multiple)) {
+					$inputField.val(options_current.placeholderText);
+				}
+				
 				// saves data
 				$this.data('richAutocomplete', {
 					 selected: $selected,
@@ -156,6 +158,37 @@ var methods = {
 								.click(function() {
 			 						$this.richAutocomplete('deselect', to_select);
 			 					});
+						}
+						
+						// create additional inputs
+						if(data.options.additionalInput) {
+							if(data.options.additionalInput.input) {
+								if(data.options.additionalInput.input.substring)
+									var $input = $(data.options.additionalInput.input);
+								else
+									var $input = data.options.additionalInput.input.clone();
+							} else {
+								var $input = $("<input>");
+							}	
+							
+							// interpolate %s with the selected item's value
+							// if the input name has %s in it, it will be replaced with the item's value
+							if (($input.attr('name'))&&($input.attr('name').match(/%s/))) {
+								$input.attr('name', $input.attr('name').replace(/%s/, to_select.value));
+							}
+							
+							// attaches the onChange Event
+							if(data.options.additionalInput.attributeName) {
+								$input.val(to_select[data.options.additionalInput.attributeName]);
+								$input.bind('change', function() {
+									to_select[data.options.additionalInput.attributeName] = $(this).val();
+									$this.richAutocomplete('_updateValues');
+								});
+							}
+							
+							$input.appendTo(to_add).addClass("ra-additional-input");
+							if(data.options.additionalInput.parameters) 
+								$input.attr(data.options.additionalInput.parameters);
 						}
 						return to_add;			
 			 	 	}
@@ -202,6 +235,11 @@ var methods = {
 		 	}
 	 	}	
 	 },
+	 // updates the selected values inside the input field
+	 _updateValues : function () {
+	 	var data = this.data('richAutocomplete');
+	 	data.idField.val(JSON.stringify(data.selected));
+	 },
 	 // selects an element
 	 // parameter to_select = { id: 2, label: "Maria José", desc: "Additional description" }
 	 select : function( to_select ) {
@@ -234,7 +272,7 @@ var methods = {
 			
 			// verifico duplicados, se for necessário pela configuração 	 		
  	 		var old_length = data.selected.length; 	 		
- 	 		if(data.options.multiple_unique)
+ 	 		if(data.options.acceptsDuplicates)
  	 			data.selected = $.distinct(data.selected, function(v1,v2) { return v1.value == v2.value; });
  	 		
  	 		// após remover as duplicadas, o array foi alterado? se foi alterado quer dizer que não há nada a adicionar!
@@ -246,7 +284,7 @@ var methods = {
  	 		} 
 	 	 		
 			// ponho os valores no campo, em formato JSON
- 			data.idField.val(JSON.stringify(data.selected));
+ 			this.richAutocomplete('_updateValues');
 		}
 		
 		to_add.appendTo(data.displayWrapper)
@@ -277,7 +315,7 @@ var methods = {
 			data.selected.splice(i, 1);
 			
 			// atualizo o campo
- 	 		data.idField.val(JSON.stringify(data.selected));
+ 	 		this.richAutocomplete('_updateValues');
 			if(data.selected.length == 0)
 				data.displayWrapper.slideUp('fast');
 		}
@@ -350,15 +388,3 @@ $.fn.richAutocomplete = function( method ) {
 };
 })( jQuery );
 
-$("input.ra-input").richAutocomplete({ 
-	source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
-		{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante"},
-		{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
-		{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
-		{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
-		{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
-		{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
-	]
-	});
-
-$("input.ra-input").bind('ra.beforeSelect', function(evt, data, object) { });

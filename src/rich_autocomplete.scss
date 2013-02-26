@@ -52,3 +52,12 @@
   display: block;
   text-decoration: italic;
 }
+
+input.ra-additional-input, select.ra-additional-input {
+  float: right;
+  margin-right: 25px;
+  width: 45px;
+}
+select.ra-additional-input {
+  width: auto;
+}

@@ -7,8 +7,8 @@
         <link href="./lib/jquery-ui-1.10.0.custom.min.css" media="all" rel="stylesheet" type="text/css">
         <style>
         	.container { width: 970px; }
-        	input { width: 350px; }
-        	.input-wrapper { width: 350px; }
+        	input { width: 550px; display: block !important; }
+        	.input-wrapper { width: 550px; }
         	.ui-autocomplete {
 		  background: #fff;
 		  border: 1px solid #ccc;
@@ -49,8 +49,8 @@
 		<h2>Demo #3 - Single select</h2>
 			<div class="input-wrapper">
 				<input class="ra-input"
-				data-ra-selected="[]" name="imovel[proprietario_id]" type="text" 
-				value="[]">
+				data-ra-selected="" name="imovel[proprietario_id]" type="text" 
+				value="">
 			</div>
 		
 		<h2>Demo #4 - Single select with previously selected data</h2>
@@ -62,13 +62,13 @@
 			
 		<h2>Demo #5 - Multiple select with additional input!</h2>
 			<div class="input-wrapper" id="demo5">
-				<input class="ra-input" data-ra-multiple="true"
+				<input class="" data-ra-multiple="true"
 				data-ra-selected='[{ "label": "Samara Felippo", "value": 5, "desc": "Pessoa muito interessante", "percentage": "12%"}, { "label": "Stella Artois", "value": 6, "desc": "Pessoa muito interessante", "percentage": "32%"}]' type="text" 
 				value="[]">
 			</div>
 		<h2>Demo #6 - Multiple select (accepts duplicated values) and additional select field!</h2>
 			<div class="input-wrapper" id="demo6">
-				<input class="ra-input" data-ra-multiple="true" data-ra-multiple-unique="false"
+				<input class="" data-ra-multiple="true" data-ra-multiple-unique="false"
 				data-ra-selected='[{ "label": "Samara Felippo", "value": 5, "desc": "Pessoa muito interessante", "sex": "F"}, { "label": "Stella Artois", "value": 6, "desc": "Pessoa muito interessante", "sex": "M"}]' type="text" 
 				value="[]">
 			</div>
@@ -80,33 +80,50 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="./lib/jquery.js" type="text/javascript"></script>
     <script src="./lib/jquery-ui-1.10.0.custom.min.js" type="text/javascript"></script>
-    <script type="text/javascript">
-		$("#demo5 input").bind('ra.afterSelect', function(evt, data, selected_item) {
-			var $input = $("<input>", {
-				name: "percentage_for_"+selected_item.value,
-				type: "text",
-				"class": "additional-info",
-				"value": selected_item["percentage"],
-				"data-ra-additional-input": "percentage"
-			});
-			data.displayWrapper.find('[data-ra-selected-value="'+selected_item.value+'"]:last').append($input);
+    <script src="./src/rich_autocomplete.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		$("input.ra-input").richAutocomplete({ 
+			source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
+				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante"},
+				{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
+				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
+				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
+				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
+			]
 		});
 		
-		$("#demo6 input").bind('ra.afterSelect', function(evt, data, selected_item) {
-			var $select = $("<select>", {
-				name: "sex_for_"+selected_item.value,
-				type: "text",
-				"class": "additional-info",
-				"data-ra-additional-input": "percentage"
-			});
+		$("#demo5 input").richAutocomplete({
+			source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
+				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante"},
+				{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
+				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
+				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
+				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
+			],
+			additionalInput: { input: $select, parameters: { name: "percentage_for_%s" }, attributeName: "percentage" }
+		});
+		
+		var $select = $("<select>", {
+					name: "sex_for_%s",
+					type: "text"
+				});
 			
 			$("<option value='F'> Female </option>").appendTo($select);
 			$("<option value='M'> Male </option>").appendTo($select);
-			$select.find('option[value="'+selected_item.sex+'"]').attr('selected', true);
-			data.displayWrapper.find('[data-ra-selected-value="'+selected_item.value+'"]:last').append($select);
+			
+		$("#demo6 input").richAutocomplete({
+			source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
+				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante", sex: "M"},
+				{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
+				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
+				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
+				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
+			],
+			additionalInput: { input: $select, attributeName: "sex" }
 		});
-	</script>
-	
-    <script src="./src/rich_autocomplete.js" type="text/javascript"></script>
-
+		</script>
 </body></html>
