@@ -1,16 +1,6 @@
+// @author Samuel Gomes Brandão (gb.samuel@gmail.com)
+// 2013 - No license, use as you wish, just keep the credits in the code.
 
-/* CRIA UM AUTOCOMPLETE MAIS ELABORADO, QUE EXIBE NÃO SÓ UMA LINHA DE TEXTO MAS TAMBÉM UMA SEGUNDA */
-
-/* NO CAMPO data-ra-source deve haver a url para requisição das opções do autocomplete 
-* Deve-ser retornar um array de itens da seguinte forma:
-* [{id: 1, label: "Maria José", desc: "Cpf 076.735.566-22" }, ... ]
-* 
-* Tanto o id quanto o campo desc são opcionais
-* Se não for informado um id, o autocomplete usará o campo label
-* 
-* No html deve haver três campos. O que será enviado para o servidor será o campo com a classe .ra-autocomplete-input
-* O campo desc é preenchido com a descrição do item que tiver sido selecionado
-* */
 
 
 // returns a copy of the array passed as parameter without duplicates
@@ -44,12 +34,13 @@ var methods = {
 	 	var default_options = {
 	 	 	minLength: 2,	// jquery-ui parameter, how many characters does the user has to type before receiving suggestions?
 	 	 	multiple: false,	// type = single or multiple? Allows user to select many objects, or just one?
-	 	 	
-	 	 	additionalInput: null,	// format: { input: "<input>", params: {}}
+	 	 	displaySelectedDescription: true, // shall we display the selected item's description?
+	 	 	additionalInput: null,	// format: { input: "<input>", params: {}},
+	 	 	autocompleteActions: null,
 	 	 	placeholderText: "Comece a digitar...", // straight-forward
-	 	 	deselectLink: "<a class='close'>X</a>", // just the html, so you may customize it
+	 	 	deselectLink: "<a class='close'>&times;</a>", // just the html, so you may customize it
 	 	 	// only for type = multiple
-	 	 	acceptsDuplicates: true,		// if set to false the autocomplete will accept duplicate values selected
+	 	 	acceptsDuplicates: true		// if set to false the autocomplete will accept duplicate values selected
 	 	 }; // end default_options
 	 	 
 	 	 options = $.extend(default_options, options);
@@ -64,11 +55,12 @@ var methods = {
 			 		placeholderText: $this.attr('data-ra-placeholder'),
 			 		source: (($this.attr('data-ra-source') != null) && ($this.attr('data-ra-source') != "")) ? $this.attr('data-ra-source') : undefined,
 			 		multiple: $this.attr('data-ra-multiple'),
-			 		acceptsDuplicates: $this.attr('data-ra-multiple-unique') != "false"
+			 		acceptsDuplicates: $this.attr('data-ra-multiple-unique') != "false",
+			 		displaySelectedDescription: $this.attr('data-ra-display-selected-description') != "false"
 			 	});
 			 	
 			 	// campos comuns para todos tipos de inputs
-			 	$this.hide();
+			 	$this.addClass('ra-input').hide();
 			 	var $inputField = $('<input autocomplete="off">', { 
 							 			"class" : "ra-autocomplete-input",
 							 			"type": "text"
@@ -150,11 +142,18 @@ var methods = {
 			 	 			.attr('data-ra-selected-value', to_select.value)
 							.append($("<span class='ra-selected-label'></span>")
 							.html(to_select.label));
-						
+							
+						if(to_select.desc && data.options.displaySelectedDescription){
+							to_add.addClass('ra-selected-with-description')
+								.append(
+									$("<span class='ra-selected-desc'>").html(to_select.desc)
+								);
+							
+						}						
 						// close link
 						if(data.options.deselectLink) {
 							var $deselect = $(data.options.deselectLink)
-								.appendTo(to_add)
+								.prependTo(to_add)
 								.click(function() {
 			 						$this.richAutocomplete('deselect', to_select);
 			 					});
@@ -162,7 +161,8 @@ var methods = {
 						
 						// create additional inputs
 						if(data.options.additionalInput) {
-							if(data.options.additionalInput.input) {
+							if(data.options.additionalInput
+								.input) {
 								if(data.options.additionalInput.input.substring)
 									var $input = $(data.options.additionalInput.input);
 								else
@@ -186,7 +186,7 @@ var methods = {
 								});
 							}
 							
-							$input.appendTo(to_add).addClass("ra-additional-input");
+							$input.prependTo(to_add).addClass("ra-additional-input");
 							if(data.options.additionalInput.parameters) 
 								$input.attr(data.options.additionalInput.parameters);
 						}
@@ -213,6 +213,7 @@ var methods = {
 					};				
 			 	
 			 		$this.richAutocomplete('_initializeSelected');
+			 		$this.trigger('ra.afterInitialize', [data]);
 			 } // IF (!data)
 		 }); // this.each
 	 }, // function init
@@ -310,7 +311,7 @@ var methods = {
 	 		
 		} else { // type = single?
 			// hide the displayed item
-			data.displayWrapper.find('[data-ra-selected-value="'+to_select.value+'"]').slideUp('fast');
+			data.displayWrapper.find('[data-ra-selected-value="'+to_select.value+'"]:first').slideUp('fast', function() { $(this).remove(); });
 			var i = data.selected.indexOf(to_select);
 			data.selected.splice(i, 1);
 			

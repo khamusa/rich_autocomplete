@@ -7,7 +7,7 @@
         <link href="./lib/jquery-ui-1.10.0.custom.min.css" media="all" rel="stylesheet" type="text/css">
         <style>
         	.container { width: 970px; }
-        	input { width: 550px; display: block !important; }
+        	input { width: 550px; /*display: block !important;*/}
         	.input-wrapper { width: 550px; }
         	.ui-autocomplete {
 		  background: #fff;
@@ -66,15 +66,24 @@
 				data-ra-selected='[{ "label": "Samara Felippo", "value": 5, "desc": "Pessoa muito interessante", "percentage": "12%"}, { "label": "Stella Artois", "value": 6, "desc": "Pessoa muito interessante", "percentage": "32%"}]' type="text" 
 				value="[]">
 			</div>
-		<h2>Demo #6 - Multiple select (accepts duplicated values) and additional select field!</h2>
+		<h2>Demo #6 - Multiple select (accepts duplicated values) and additional select field, without selected description!</h2>
 			<div class="input-wrapper" id="demo6">
-				<input class="" data-ra-multiple="true" data-ra-multiple-unique="false"
+				<input class="" data-ra-multiple="true" data-ra-multiple-unique="false" data-ra-display-selected-description="false"
 				data-ra-selected='[{ "label": "Samara Felippo", "value": 5, "desc": "Pessoa muito interessante", "sex": "F"}, { "label": "Stella Artois", "value": 6, "desc": "Pessoa muito interessante", "sex": "M"}]' type="text" 
 				value="[]">
+			</div>
+			
+		<h2>Demo #7 - Multiple select (accepts duplicated values), additional select fields and additional actions!</h2>
+			<div class="input-wrapper" id="demo7">
+				<input class="" data-ra-multiple="true" data-ra-multiple-unique="false" data-ra-display-selected-description="false
+				data-ra-selected='[{ "label": "Samara Felippo", "value": 5, "desc": "Pessoa muito interessante", "sex": "F"}, { "label": "Stella Artois", "value": 6, "desc": "Pessoa muito interessante", "sex": "M"}]' type="text" 
+				value="[]">
+				<a href="#">+ Add new User</a>
 			</div>
 		</form>
 	</div>	
 	
+	//TODO when accepting duplicate selections, when user removes a selected item, we must make sure what item we're going to hide
     <!-- Javascripts
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
@@ -124,6 +133,24 @@
 				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
 			],
 			additionalInput: { input: $select, attributeName: "sex" }
+		});
+		
+		$("#demo7 input").richAutocomplete({
+			source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
+				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante", sex: "M"},
+				{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
+				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
+				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
+				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}
+			],
+			additionalInput: { input: $select, attributeName: "sex" }
+		});
+		
+		$("#demo7 a").click(function(evt) {
+			var tmp = {label: "João José", value: 3, sex: "M", desc: "Pessoa interessante adicionada posteriormente" };
+			$(this).parent().find('.ra-input').richAutocomplete("select", tmp);
+			evt.preventDefault();
 		});
 		</script>
 </body></html>
