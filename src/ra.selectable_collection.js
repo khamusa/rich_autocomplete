@@ -12,7 +12,7 @@ RA.debug = true;
 		renderDeselectLink: function(renderedItem, elementObject, data) {
 			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
 			if(data.options.deselect == "flag")
-					deselect.append('<input type="hidden" name="_destroy" value="0">')
+					deselect.append('<input type="hidden" name="'+data.options.deselectFlagName+'" value="0">')
 
 			deselect.click(function() {
 						// calls the collection removeElement method
@@ -37,7 +37,7 @@ RA.debug = true;
 						$('<input>', {
 								type: 'hidden',
 								value: elementObject[props[i]],
-								name: elementObject._prefix+"["+props[i]+"]"
+								name: elementObject._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", props[i])
 							})
 							.appendTo(renderedItem);
 					}
@@ -78,6 +78,7 @@ RA.debug = true;
 		unique: true,				// indicates if there can be duplicated selected elements (same value), this parameter is handled by ra.object_collection
 	 	multiple: false,			// type = single or multiple? Allows user to select many objects, or just one?											
 	 	deselect: 'flag',			// possible options: flag, remove, false
+	 	deselectFlagName: '_destroy',
 	 	hiddenInputs: {				// specifies options for the hidden inputs we want to insert along selected elements
 	 		// namePrefix
 	 		// You may interpolate elements properties or random strings in the hidden inputs names
@@ -103,7 +104,8 @@ RA.debug = true;
 	 		//	true means every property defined in the selected element will be included
 	 		//	false means no property getting included (useful if you want to manage it by yourself)
 	 		//	["prop1", [ ... ]] - an array of properties names
-	 		properties: true				
+	 		properties: true,
+	 		propertyFormat: '[%s{property}]'
 	 	},
 	 	display: {					// display configuration
 	 		elementClass: 'selected_element',												 	
@@ -222,7 +224,7 @@ RA.debug = true;
 				if(data.options.deselect == "remove")
 					renderedItem.remove();
 				else if(data.options.deselect == "flag") {
-					renderedItem.hide().find('[name*="_destroy"]').val(1);
+					renderedItem.hide().find('[name*="'+data.options.deselectFlagName+'"]').val(1);
 				}
 				data.collection.removeAt(index);
 			}
