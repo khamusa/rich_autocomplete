@@ -82,16 +82,39 @@
 			</div>
 		</form>
 	</div>	
+
+	<div id="testNew"></div>
 	
-	//TODO when accepting duplicate selections, when user removes a selected item, we must make sure what item we're going to hide
     <!-- Javascripts
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="./lib/jquery.js" type="text/javascript"></script>
     <script src="./lib/jquery-ui-1.10.0.custom.min.js" type="text/javascript"></script>
+    <script src="./src/ra.object_collection.js" type="text/javascript"></script>
+    <script src="./src/ra.selectable_collection.js" type="text/javascript"></script>
     <script src="./src/rich_autocomplete.js" type="text/javascript"></script>
 
 	<script type="text/javascript">
+		$('#testNew').selectableContainer({
+				hiddenInputs: { 
+					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
+				}
+			})
+			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
+				var $select = $("<select>");
+			
+				$("<option value='F'> Female </option>").appendTo($select);
+				$("<option value='M'> Male </option>").appendTo($select);
+				
+				$select
+					.bind('change', function () {
+						elementObject["sex"] = $(this).val();
+					})
+					.appendTo(renderedItem);
+			})
+			.selectableContainer('insert', { haha: "teste" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" });
 		$("input.ra-input").richAutocomplete({ 
 			source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
 				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante"},

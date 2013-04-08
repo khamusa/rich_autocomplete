@@ -67,7 +67,10 @@ var methods = {
 							 		})
 							 		.hide()
 							 		.insertAfter($this);
-				 		
+							 		
+				if(options_current.placeholderText)
+					$inputField.attr("placeholder", options_current.placeholderText); 
+					 		
 			 	var $displayWrapper = $('<div>', { 
 						 				"class": "ra-display"
 						 			})
@@ -90,12 +93,6 @@ var methods = {
 			 	
 			 	// remove o placeholder quando o inputField ganha foco
 				$inputField
-					.focus(function() {
-						if($inputField.val() == options_current.placeholderText) {
-							$inputField.val('');
-						}
-					})
-					// quando o campo perde foco, o que fazer?
 					.blur(function() {
 						if(!options_current.multiple) {
 							if($this.val() != "") {
@@ -103,8 +100,8 @@ var methods = {
 								$displayWrapper.show();
 							}
 						}
-						if (($inputField.val() == '')||(options_current.multiple)) {
-							$inputField.val(options_current.placeholderText);
+						if ((options_current.multiple)) {
+							$inputField.val('');
 						}
 						
 					})
@@ -122,10 +119,6 @@ var methods = {
 						$selected = null;
 				} catch(e) {
 					var $selected = null;
-				}
-				
-				if (($selected == null)||(options_current.multiple)) {
-					$inputField.val(options_current.placeholderText);
 				}
 				
 				// saves data
@@ -200,6 +193,7 @@ var methods = {
 					minLength: options_current.minLength,
 					source: options_current.source,
 				
+					focus: function(event, ui) { event.preventDefault() }, // do nothing
 					select: function( event, ui ) {
 						$this.richAutocomplete('select', ui.item);
 						return false;
@@ -258,8 +252,9 @@ var methods = {
  			// escondo as coisas necessárias e mostro as outras
 			data.inputField
 				.val(to_select.label)
-				.slideUp('fast');
-			data.displayWrapper.slideDown('fast');
+				.hide();
+			data.displayWrapper.show();
+			
 			
 			// salvo a informação de qual item foi selecionado
 			data.idField.val(to_select.value);
@@ -288,8 +283,9 @@ var methods = {
  			this.richAutocomplete('_updateValues');
 		}
 		
-		to_add.appendTo(data.displayWrapper)
-			.slideDown('fast');
+		if(to_add)
+			to_add.appendTo(data.displayWrapper)
+				.show();
 			
 		this.trigger('ra.afterSelect', [data, to_select]);
 		this.data('richAutocomplete', data);
@@ -305,20 +301,20 @@ var methods = {
 			data.idField.val('');
 			
 			// deselecionei, re-exibo o campo de input para o usuário
-			data.inputField.slideDown('fast').focus();
-			data.displayWrapper.slideUp('fast').html('');
+			data.inputField.show().focus();
+			data.displayWrapper.hide().html('');
 	 		data.selected = null;
 	 		
 		} else { // type = single?
 			// hide the displayed item
-			data.displayWrapper.find('[data-ra-selected-value="'+to_select.value+'"]:first').slideUp('fast', function() { $(this).remove(); });
+			data.displayWrapper.find('[data-ra-selected-value="'+to_select.value+'"]:first').remove();
 			var i = data.selected.indexOf(to_select);
 			data.selected.splice(i, 1);
 			
 			// atualizo o campo
  	 		this.richAutocomplete('_updateValues');
 			if(data.selected.length == 0)
-				data.displayWrapper.slideUp('fast');
+				data.displayWrapper.hide();
 		}
 		
 		this.trigger('ra.afterDeselect', [data, to_select]);

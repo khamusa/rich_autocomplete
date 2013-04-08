@@ -1,0 +1,111 @@
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <title>Rich Autocomplete Demo Test</title>
+    <meta content="authenticity_token" name="csrf-param">
+	<meta content="rHsRWOUZG28i3HwdfzBvpvOJWRhI6+somFuGPSDx7E4=" name="csrf-token">
+    <link href="./src/rich_autocomplete.scss" media="all" rel="stylesheet" type="text/css">
+        <link href="./lib/jquery-ui-1.10.0.custom.min.css" media="all" rel="stylesheet" type="text/css">
+        <style>
+        	.container { width: 970px; }
+        	input { width: 550px; /*display: block !important;*/}
+        	
+        	div.test { margin-bottom:15px ; }
+        	.testLink { margin-right: 5px; padding-right: 5px; border-right: 1px dotted #ccc;}
+        </style>
+     </head>
+  <body>
+  	<div class="container">
+  		<div class="test">
+  		<h3>Test #1 - initialization with additional select and UNIQUE selected values:</h3>
+	  		<a class="testLink add" href="#" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo1">Debug collection</a>
+			<div id="demo1"></div>
+			<a class="restLink removeWithValue" href="#">Remove with value = </a><input type="text" />
+		</div>
+		<div class="test">
+  		<h3>Test #2 - initialization with additional select with repeated selected values:</h3>
+	  		
+	  		<a class="testLink add" href="#" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo2">Debug collection</a>
+			<div id="demo2"></div>
+		</div>
+	</div>	              	
+	
+    <!-- Javascripts
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./lib/jquery.js" type="text/javascript"></script>
+    <script src="./lib/jquery-ui-1.10.0.custom.min.js" type="text/javascript"></script>
+    <script src="./src/ra.object_collection.js" type="text/javascript"></script>
+    <script src="./src/ra.selectable_collection.js" type="text/javascript"></script>
+    <script src="./src/rich_autocomplete.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		$('#demo1').selectableContainer({
+				hiddenInputs: { 
+					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
+				}
+			})
+			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
+				var $select = $("<select>");
+			
+				$("<option value=''> -- Sex -- </option>").appendTo($select);
+				$("<option value='F'> Female </option>").appendTo($select);
+				$("<option value='M'> Male </option>").appendTo($select);
+				
+				$select
+					.bind('change', function () {
+						elementObject["sex"] = $(this).val();
+					})
+					.appendTo(renderedItem);
+			})
+			.selectableContainer('insert', { haha: "teste" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" });
+
+		$('#demo2').selectableContainer({
+				hiddenInputs: { 
+					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
+				},
+				unique:false
+			})
+			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
+				var $select = $("<select>");
+			
+				$("<option value=''> -- Sex -- </option>").appendTo($select);
+				$("<option value='F'> Female </option>").appendTo($select);
+				$("<option value='M'> Male </option>").appendTo($select);
+				
+				$select
+					.bind('change', function () {
+						elementObject["sex"] = $(this).val();
+					})
+					.appendTo(renderedItem);
+			})
+			.selectableContainer('insert', { haha: "teste" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" })
+			.selectableContainer('insert', { label: "teste", value: "Bugue" });
+	
+		$('a.add').click(function() {
+			$(this).siblings('.selectable_container:first')
+				.selectableContainer('insert', JSON.parse($(this).attr('data-element')) );
+		});
+		$('a.debugCollection').click(function() {
+			alert(   JSON.stringify($(this).siblings('.selectable_container:first')
+				.selectableContainer('getPairs'))   );
+
+		});
+		$('a.removeWithValue').click(function() {
+			$(this).siblings('.selectable_container:first')
+				.selectableContainer('remove', $(this).next().val());
+		});
+		</script>
+</body></html>
