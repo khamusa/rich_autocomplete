@@ -12,7 +12,7 @@ RA.debug = true;
 		renderDeselectLink: function(renderedItem, elementObject, data) {
 			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
 			if(data.options.deselect == "flag")
-					deselect.append('<input type="hidden" name="'+data.options.deselectFlagName+'" value="0">')
+					deselect.append('<input type="hidden" name="'+elementObject._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", data.options.deselectFlagName)+'" value="0">')
 
 			deselect.click(function() {
 						// calls the collection removeElement method
@@ -70,6 +70,39 @@ RA.debug = true;
 				prefix = prefix.replace(to_interpol[0], result);
 			} // while
 			return prefix
+		},
+		initializeFromElementsArray: function($this, elements, data) {	
+			for(var i =0; i < elements.length; i++)
+				$this[pluginName]('insert', elements[i]);
+		},
+		/* This method infer from the inner html input or select fields the elements to be initally added to our collection
+		 * Oh, and it rocks! :D
+		*/
+		inferDataFromInputs: function(context, data) {
+			function escapeRegExp(str) { return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); }
+			var valuePropertyFormat = data.options.hiddenInputs.propertyFormat.replace("%s{property}", "value");
+			var propertyNameDelimiters = valuePropertyFormat.split('value')
+			if(propertyNameDelimiters[0])
+						propertyNameDelimiters[0] = new RegExp("^"+escapeRegExp(propertyNameDelimiters[0]));
+			if(propertyNameDelimiters[1])
+						propertyNameDelimiters[1] = new RegExp(escapeRegExp(propertyNameDelimiters[1])+"$");
+
+			var elements = [];		// the final array we will return
+			var candidateValues = context.find('[name*="'+valuePropertyFormat+'"]').each(function() {
+				var name = $(this).attr('name');
+				var prefix = name.replace(valuePropertyFormat, "");
+				var newObj = {};
+				context.find('[name^="'+prefix+'"]').each(function() {
+					var $this = $(this);
+					var attrName = $this.attr('name').replace(prefix, "");
+					if(propertyNameDelimiters[0]) attrName = attrName.replace(propertyNameDelimiters[0], "");
+					if(propertyNameDelimiters[1]) attrName = attrName.replace(propertyNameDelimiters[1], "");
+					if((attrName != data.options.deselectFlagName)&&(attrName != "random")&&(attrName != "_prefix")) // we don't want to read a _destroy attribute, for example
+						newObj[attrName] = $this.val();					
+				});
+				elements.push(newObj); // pushes the object, doesn't matter if it is valid or not
+			});
+			return elements;
 		}
 	}
 
@@ -79,6 +112,7 @@ RA.debug = true;
 	 	multiple: false,			// type = single or multiple? Allows user to select many objects, or just one?											
 	 	deselect: 'flag',			// possible options: flag, remove, false
 	 	deselectFlagName: '_destroy',
+	 	initialData: 'infer',		// available options: 'infer', array of elements object [ { label: x, value: y } [, ... {}] ] or false
 	 	hiddenInputs: {				// specifies options for the hidden inputs we want to insert along selected elements
 	 		// namePrefix
 	 		// You may interpolate elements properties or random strings in the hidden inputs names
@@ -114,7 +148,7 @@ RA.debug = true;
  			innerContainer: '<div class="inner_selectable_container"></div>',	// the inner container which will contain the rendered items
  			singleItem: '<div class="single_item"></div>',						// the element used to render each item
  			title: '<span class="single_item_title"></div>',
- 			deselectLink: '<span class="single_item_deselect">[x]</span>',		// html to build the "close link" which deselects an element
+ 			deselectLink: '<span class="single_item_deselect">&times;</span>',		// html to build the "close link" which deselects an element
 
  			/* Overwritable Rendering Methods */	
 			/* In all those methods, this references the cointaner element upon which the plugin has been called */
@@ -145,14 +179,7 @@ RA.debug = true;
 			/* Must render AND append the item title to the supplied renderedItem */
 			renderItemTitle: function(renderedItem, elementObject, data) {
 				return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
-			},
-
-			initialRender: function(data) {
-				this.trigger(pluginName+".beforeInitialRender", [data]);
-				// TODO loop through objects and render each of them
-				this.trigger(pluginName+".afterInitialRender", [data]);
-			}
-	 		
+			}	 		
 	 	}		
 	}
 
@@ -168,18 +195,35 @@ RA.debug = true;
 				if ( ! data ) {
 					data = { options: options }
 					data.collection = new RA.ObjectCollection({ unique: options.unique });
-					data.innerContainer = $(data.options.display.innerContainer).appendTo($container);
+					data.innerContainer = $(data.options.display.innerContainer);
 
-			 		// initialize
-			 		data.options.display.initialRender.apply($container, [data]);
-
-			 		$container
+					$container
 			 			.addClass(options.display.containerClass)
 			 			.data(pluginName, data);			// re-saves data
+
+			 		// initialize elements, remove any content from inside and after that append the container
+			 		$container[pluginName]("initializeData").html('').append(data.innerContainer);				
 				}
 			});
 
 		}, // init
+		initializeData: function() {
+			var data = this.data(pluginName);
+			this.trigger(pluginName+".beforeInitializeData", [data]);
+
+			var elements = []
+			if(data.options.initialData == 'infer') {
+				var elements = private_methods.inferDataFromInputs(this, data);
+			} else if (data.options.initialData instanceof Array) {
+				var elements = data.options.initialData;
+			}
+			if(elements && elements instanceof Array)
+				private_methods.initializeFromElementsArray(this, elements, data);
+			
+			this.data(pluginName, data);
+			this.trigger(pluginName+".afterInitializeData", [data]);
+			return this;
+		},
 		/* Inserts an element into the collection, while also 
 		 * triggering the applyable events;
 		*/

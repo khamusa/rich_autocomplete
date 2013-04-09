@@ -37,6 +37,29 @@
 			<a class="testLink debugCollection" href="#demo2">Debug collection</a>
 			<div id="demo2"></div>
 		</div>
+		<div class="test">
+  		<h3>Test #3 - Unique value, with inital values read from html markup - it rocks!:</h3>
+	  		
+	  		<a class="testLink add" href="#" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
+			<a class="testLink add" href="#" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo3">Debug collection</a>
+			<div id="demo3">
+				<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
+				<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
+
+				<input type="hidden" value="Felipe Maria" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][label]">
+				<input type="hidden" value="2" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][value]">
+
+				<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
+				<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
+
+				<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
+				<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
+			</div>
+		</div>
 	</div>	              	
 	
     <!-- Javascripts
@@ -93,6 +116,27 @@
 			.selectableContainer('insert', { haha: "teste" })
 			.selectableContainer('insert', { label: "teste", value: "Bugue" })
 			.selectableContainer('insert', { label: "teste", value: "Bugue" });
+
+		$('#demo3')
+			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
+				var $select = $("<select>");
+			
+				$("<option value=''> -- Sex -- </option>").appendTo($select);
+				$("<option value='F'> Female </option>").appendTo($select);
+				$("<option value='M'> Male </option>").appendTo($select);
+				
+				$select
+					.bind('change', function () {
+						elementObject["sex"] = $(this).val();
+					})
+					.appendTo(renderedItem);
+			})
+			.selectableContainer({
+				hiddenInputs: { 
+					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
+				},
+				unique: true
+			});
 	
 		$('a.add').click(function() {
 			$(this).siblings('.selectable_container:first')
