@@ -38,7 +38,7 @@
 			<div id="demo2"></div>
 		</div>
 		<div class="test">
-  		<h3>Test #3 - Multiple, unique value, with inital values read from html markup - it rocks!:</h3>
+  		<h3>Test #3 - Multiple, unique value, with inital values read from html markup, removed elements get removed from the dom tree:</h3>
 	  		
 	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
 			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
@@ -135,10 +135,7 @@
 						elementObject["sex"] = $(this).val();
 					})
 					.appendTo(renderedItem);
-			})
-			.selectableContainer('insert', { haha: "teste" })
-			.selectableContainer('insert', { label: "teste", value: "Bugue" })
-			.selectableContainer('insert', { label: "teste", value: "Bugue" });
+			});
 
 		$('#demo2').selectableContainer({
 				hiddenInputs: { 
@@ -158,10 +155,7 @@
 						elementObject["sex"] = $(this).val();
 					})
 					.appendTo(renderedItem);
-			})
-			.selectableContainer('insert', { haha: "teste" })
-			.selectableContainer('insert', { label: "teste", value: "Bugue" })
-			.selectableContainer('insert', { label: "teste", value: "Bugue" });
+			});
 
 		$('#demo3')
 			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
@@ -181,7 +175,8 @@
 				hiddenInputs: { 
 					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
 				},
-				unique: true
+				unique: true,
+				deselect: 'remove'
 			});
 
 		$('#demo4')

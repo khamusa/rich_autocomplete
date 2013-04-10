@@ -25,8 +25,9 @@ RA.debug = true;
 			return $container;
 		},
 		initializeFromElementsArray: function($this, elements, data) {	
-			for(var i =0; i < elements.length; i++)
+			for(var i =0; i < elements.length; i++) {
 				$this[pluginName]('insert', elements[i]);
+			}
 		},
 		/* This method infer from the inner html input or select fields the elements to be initally added to our collection
 		 * Oh, and it rocks! :D
@@ -146,7 +147,7 @@ RA.debug = true;
 		renderItemDesc: function(renderedItem, elementObject, data) {
 			var descTxt = elementObject[data.options.display.descriptionProperty];
  			if(descTxt)
-				return $(data.options.display.description).text(descTxt).appendTo(renderedItem);
+				return $(data.options.display.description).text(descTx).appendTo(renderedItem);
 			else
 				return false;
 		},
@@ -156,6 +157,14 @@ RA.debug = true;
 		renderDeselectLink: function(renderedItem, elementObject, data) {
 			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
 			return deselect;
+		},
+		/* Responsible for animating in a recently inserted object */
+		animateIn: function (renderedItem) {
+			renderedItem.hide().slideDown('fast');
+		},
+		/* Responsible for animating in a recently inserted object */
+		animateOut: function (renderedItem, callback) { // vamos manter o callback?
+			renderedItem.slideUp('fast');
 		}
 	}
 
@@ -163,7 +172,7 @@ RA.debug = true;
 		/* Configuration options */
 		unique: true,				// indicates if there can be duplicated selected elements (same value), this parameter is handled by ra.object_collection										
 	 	limitElements: false,			// limit the amount of maximum selected elements, false or 0 means no limit
-	 	limitMode: 'overwrite_last',	// 'overwrite_last', 'remove_first' or anything else will mean 'no action'
+	 	limitMode: 'remove_first',	// 'overwrite_last', 'remove_first' or anything else will mean 'no action'
 	 	deselect: 'flag',			// possible options: "flag", "remove", false
 	 	deselectFlagName: '_destroy',	// if deselect is set to "flag", this is the parameter name that will be used
 	 	initialData: 'infer',		// available options: 'infer', array of elements object [ { label: x, value: y } [, ... {}] ] or false
@@ -210,7 +219,11 @@ RA.debug = true;
 			appendItem: overwritable_methods.appendItem,
 			renderItem: overwritable_methods.renderItem,
 			renderItemTitle: overwritable_methods.renderItemTitle,
-			renderItemDesc: overwritable_methods.renderItemDesc
+			renderItemDesc: overwritable_methods.renderItemDesc,
+			animation: {
+				in: overwritable_methods.animateIn,
+				out: overwritable_methods.animateOut
+				}
 			}		
 	}
 
@@ -225,6 +238,7 @@ RA.debug = true;
 				// Initialize the plugin if the plugin hasn't been initialized yet
 				if ( ! data ) {
 					data = { options: options }
+					data.initialized = false;
 					data.collection = new RA.ObjectCollection({ unique: options.unique, maxElements: options.maxElements });
 					data.innerContainer = $(data.options.display.innerContainer);
 
@@ -234,7 +248,8 @@ RA.debug = true;
 
 			 		// initialize elements, remove any content from inside and after that append the container
 			 		implementation_methods.initializeData($container, data);
-			 		$container.html('').append(data.innerContainer);				
+			 		$container.html('').append(data.innerContainer);	
+			 		data.initialized = true;			
 				}
 			});
 
@@ -247,14 +262,15 @@ RA.debug = true;
 			// check limits
 			if((data.options.limitElements) && (data.collection.length >= data.options.limitElements))
 			{
-				if(data.options.limitMode == 'overwrite_last')
-					this[pluginName]('removeElement', data.collection.at(data.collection.length - 1));
-				else if(data.options.limitMode == 'remove_first')
-					this[pluginName]('removeElement', data.collection.at(0));
-				else // no action
-					return this;
+				if(!data.options.unique || (data.collection.index(elementObject) == null)) {// if it is of type unique we must check if the element is already present
+					if(data.options.limitMode == 'overwrite_last')
+						this[pluginName]('removeElement', data.collection.at(data.collection.length - 1));
+					else if(data.options.limitMode == 'remove_first')
+						this[pluginName]('removeElement', data.collection.at(0));
+					else // no action
+						return this;
+				}
 			}
-
 
 			this.trigger(pluginName+".beforeInsert", [elementObject, data]);
 
@@ -281,6 +297,9 @@ RA.debug = true;
 				this.trigger(pluginName+".afterAppendItem", [appendedDomObject, elementObject, data]);
 				// event callback
 				this.trigger(pluginName+".afterInsert", [elementObject, appendedDomObject, data]);
+
+				if(data.initialized && data.options.display.animation)
+					data.options.display.animation.in(appendedDomObject, elementObject, data);
 			} 
 			return this;			
 		},
@@ -304,11 +323,24 @@ RA.debug = true;
 			if(index !== null) {
 				var renderedItem = elementObject.meta._renderedItem;
 
-				if(data.options.deselect == "remove")
-					renderedItem.remove();
-				else if(data.options.deselect == "flag") {
-					renderedItem.hide().find('[name*="'+data.options.deselectFlagName+'"]').val(1);
+				if(data.options.deselect == "remove") {
+					if(data.initialized && data.options.display.animation) {
+						// If we're animating, the object gets only hidden, but we do not want any of it's information to be sent through the server
+						renderedItem.find('input:hidden, select:hidden, textarea:hidden').remove();
+						renderedItem.find('input, select, textarea').attr('name', '');
+						data.options.display.animation.out(renderedItem);
+					} else {
+						renderedItem.remove();
+					}
+				} else if(data.options.deselect == "flag") {
+					// in this case we do not have to remove or rename inputs, since we can send any data along with the destroy flag
+					renderedItem.find('[name*="'+data.options.deselectFlagName+'"]').val(1);
+					if(data.initialized && data.options.display.animation)
+						data.options.display.animation.out(renderedItem);
+					else
+						renderedItem.hide();
 				}
+
 				data.collection.removeAt(index);
 			}
 
