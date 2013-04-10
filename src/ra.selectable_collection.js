@@ -157,14 +157,6 @@ RA.debug = true;
 		renderDeselectLink: function(renderedItem, elementObject, data) {
 			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
 			return deselect;
-		},
-		/* Responsible for animating in a recently inserted object */
-		animateIn: function (renderedItem) {
-			renderedItem.hide().slideDown('fast');
-		},
-		/* Responsible for animating in a recently inserted object */
-		animateOut: function (renderedItem, callback) { // vamos manter o callback?
-			renderedItem.slideUp('fast');
 		}
 	}
 
@@ -220,10 +212,7 @@ RA.debug = true;
 			renderItem: overwritable_methods.renderItem,
 			renderItemTitle: overwritable_methods.renderItemTitle,
 			renderItemDesc: overwritable_methods.renderItemDesc,
-			animation: {
-				in: overwritable_methods.animateIn,
-				out: overwritable_methods.animateOut
-				}
+			animation: false
 			}		
 	}
 
@@ -298,8 +287,8 @@ RA.debug = true;
 				// event callback
 				this.trigger(pluginName+".afterInsert", [elementObject, appendedDomObject, data]);
 
-				if(data.initialized && data.options.display.animation)
-					data.options.display.animation.in(appendedDomObject, elementObject, data);
+				if(data.initialized && data.options.display.animation && data.options.display.animation.elementIn)
+					data.options.display.animation.elementIn(appendedDomObject, elementObject, data);
 			} 
 			return this;			
 		},
@@ -324,19 +313,19 @@ RA.debug = true;
 				var renderedItem = elementObject.meta._renderedItem;
 
 				if(data.options.deselect == "remove") {
-					if(data.initialized && data.options.display.animation) {
+					if(data.initialized && data.options.display.animation && data.options.display.animation.elementOut) {
 						// If we're animating, the object gets only hidden, but we do not want any of it's information to be sent through the server
 						renderedItem.find('input:hidden, select:hidden, textarea:hidden').remove();
 						renderedItem.find('input, select, textarea').attr('name', '');
-						data.options.display.animation.out(renderedItem);
+						data.options.display.animation.elementOut(renderedItem);
 					} else {
 						renderedItem.remove();
 					}
 				} else if(data.options.deselect == "flag") {
 					// in this case we do not have to remove or rename inputs, since we can send any data along with the destroy flag
 					renderedItem.find('[name*="'+data.options.deselectFlagName+'"]').val(1);
-					if(data.initialized && data.options.display.animation)
-						data.options.display.animation.out(renderedItem);
+					if(data.initialized && data.options.display.animation && data.options.display.animation.elementOut)
+						data.options.display.animation.elementOut(renderedItem);
 					else
 						renderedItem.hide();
 				}

@@ -3,24 +3,42 @@
 
 
 (function( $ ){
-		var pluginName = "richAutocomplete";
-		var selectableContainerName = "selectableContainer";
-		var default_options = {
-			// behaviour like options
-	 	 	minLength: 2,						// jquery-ui parameter, how many characters does the user has to type before receiving suggestions?
-	 	 	multiple: true,						// type = single or multiple? Allows user to select many objects, or just one?
-	 	 	// future: additionalInput: null,				// format: { input: "<input>", params: {}},
-	 	 	source: [],							// source for the autocomplete
-	 	 	// display-like options
-	 	 	display: {
-	 	 		placeholderText: "Procurar ...", // straight-forward
-	 	 		wrappingContainer: "<div class='rich_autocomplete_wrapper'></div>",
-	 	 		searchInput: "<input class='ra_autocomplete_input' type='text'>"
-	 	 	}
-	 	 }; // end default_options
+	var pluginName = "richAutocomplete";
+	var selectableContainerName = "selectableContainer";
+
+	var implementation_methods = {}
+	var overwritable_methods = {
+			/* Responsible for animating in a recently inserted object */
+			animateIn: function (renderedItem) {
+				renderedItem.hide().slideDown('fast');
+			},
+			/* Responsible for animating in a recently inserted object */
+			animateOut: function (renderedItem, callback) { // vamos manter o callback?
+				renderedItem.slideUp('fast');
+			}
+	}
+
+	var default_options = {
+		// behaviour like options
+ 	 	minLength: 2,						// jquery-ui parameter, how many characters does the user has to type before receiving suggestions?
+ 	 	multiple: true,						// type = single or multiple? Allows user to select many objects, or just one?
+ 	 	// future: additionalInput: null,				// format: { input: "<input>", params: {}},
+ 	 	source: [],							// source for the autocomplete
+ 	 	// display-like options
+ 	 	display: {
+ 	 		placeholderText: "Procurar ...", // straight-forward
+ 	 		wrappingContainer: "<div class='rich_autocomplete_wrapper'></div>",
+ 	 		searchInput: "<input class='ra_autocomplete_input' type='text'>",
+ 	 		animation: {
+				elementIn: overwritable_methods.animateIn,		
+				elementOut: overwritable_methods.animateOut,
+				inputIn: overwritable_methods.animateIn,		
+				inputOut: overwritable_methods.animateOut				
+			}
+ 	 	}
+ 	 }; // end default_options
 
 
-var implementation_methods = {}
 
 var methods = {
 	 init : function( opts ) {
@@ -81,7 +99,7 @@ var methods = {
 		this[selectableContainerName]('insert', to_select);
 
 		if(!data.options.multiple) {
-			// single type will need additional stuff in the future	
+			// TODO hide o parent... this.parent().find('.ra_autocomplete_input').hide();
 		}
 			
 		this.trigger(pluginName+'.afterInsert', [data, to_select]);
