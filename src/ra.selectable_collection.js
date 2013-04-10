@@ -6,13 +6,60 @@ RA.debug = true;
 
 	/* "Private Methods */
 	var private_methods = {
+		/* Overwritable Rendering Methods */	
+		/* In all those methods, this references the cointaner element upon which the plugin has been called */
+		/* $domObjToAppend is the result of the method renderItem, a jquery-wrapped dom element */
+		/* elementObject is the native js object that was inserted into the collection */
+		appendItem: function($domObjToAppend, elementObject, data) {
+			this.trigger(pluginName+".beforeAppendItem", [$domObjToAppend, elementObject, data]);
+				$domObjToAppend.appendTo(data.innerContainer);
+			this.trigger(pluginName+".afterAppendItem", [$domObjToAppend, elementObject, data]);
+			return $domObjToAppend;
+		},
+		/* elementObject is the native js object that was inserted into the collection */
+		renderItem: function(elementObject, data) {
+			this.trigger(pluginName+".beforeRenderItem", [elementObject, data]);
+			var renderedItem = $(data.options.display.singleItem);
+				data.options.display.renderItemTitle.apply(this, [renderedItem, elementObject, data]);
+				private_methods.renderHiddenInputs(renderedItem, elementObject, data);
+				// generate remover behavior and attach
+				if(data.options.deselect) {
+					private_methods.renderDeselectLink(renderedItem, elementObject, data);
+				}
+			this.trigger(pluginName+".afterRenderItem", [renderedItem, elementObject, data]);
+			return renderedItem;
+		},
+		/* Must render AND append the item title to the supplied renderedItem */
+		renderItemTitle: function(renderedItem, elementObject, data) {
+			return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
+		},
+
+		/* Other methods, non-overwritable */
+		// this refer to the private_methods object itself
+
+		// initialize data for the input, wich might be from the options object or infered from html dom objects
+		initializeData: function($container, data) {
+			$container.trigger(pluginName+".beforeInitializeData", [data]);
+
+			var elements = []
+			if(data.options.initialData == 'infer') 
+				var elements = private_methods.inferDataFromInputs($container, data);
+			else if (data.options.initialData instanceof Array) 
+				var elements = data.options.initialData;
+			
+			if(elements && elements instanceof Array)
+				this.initializeFromElementsArray($container, elements, data);
+			
+			$container.trigger(pluginName+".afterInitializeData", [data]);
+			return $container;
+		},
 		/* Will render, attach event AND append the "close"/"deselect" icon to the supplied renderedItem 
 		 * Returns the jquery-wrapped dom element
 		*/
 		renderDeselectLink: function(renderedItem, elementObject, data) {
 			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
 			if(data.options.deselect == "flag")
-					deselect.append('<input type="hidden" name="'+elementObject._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", data.options.deselectFlagName)+'" value="0">')
+					deselect.append('<input type="hidden" name="'+elementObject.meta._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", data.options.deselectFlagName)+'" value="0">')
 
 			deselect.click(function() {
 						// calls the collection removeElement method
@@ -33,11 +80,11 @@ RA.debug = true;
 				
 				// todo: remove from props the key "_prefix"
 				for(var i = 0; i < props.length; i++) {
-					if((props[i] != "_prefix")&&(props[i] != "random")) {
+					if(props[i] != "meta") {
 						$('<input>', {
 								type: 'hidden',
 								value: elementObject[props[i]],
-								name: elementObject._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", props[i])
+								name: elementObject.meta._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", props[i])
 							})
 							.appendTo(renderedItem);
 					}
@@ -46,8 +93,8 @@ RA.debug = true;
 		},
 		/* Responsible, specially, for the interpolation on inputs names */
 		interpolatePrefix: function(prefix, elementObject) {
-			if(!elementObject.random)
-				elementObject.random = Math.random().toString().slice(2);
+			if(!elementObject.meta._random)
+				elementObject.meta._random = Math.random().toString().slice(2);
 
 			var reg = /%s\{([^\{\}]+)\}/;
 			var to_interpol;
@@ -59,6 +106,8 @@ RA.debug = true;
 					// we try for a property on elementObject
 					if(elementObject.hasOwnProperty(possibilities[x]))
 						result = elementObject[possibilities[x]];
+					else if(possibilities[x] == "random")
+						result = elementObject.meta._random;
 					// if we still can't, we use literally, but ONLY if we're in the last possibility
 					else if(x >= (possibilities.length-1))
 						result = possibilities[x];
@@ -97,7 +146,7 @@ RA.debug = true;
 					var attrName = $this.attr('name').replace(prefix, "");
 					if(propertyNameDelimiters[0]) attrName = attrName.replace(propertyNameDelimiters[0], "");
 					if(propertyNameDelimiters[1]) attrName = attrName.replace(propertyNameDelimiters[1], "");
-					if((attrName != data.options.deselectFlagName)&&(attrName != "random")&&(attrName != "_prefix")) // we don't want to read a _destroy attribute, for example
+					if((attrName != data.options.deselectFlagName)&&(attrName != "meta")) // we don't want to read a _destroy attribute, for example
 						newObj[attrName] = $this.val();					
 				});
 				elements.push(newObj); // pushes the object, doesn't matter if it is valid or not
@@ -108,8 +157,7 @@ RA.debug = true;
 
 	var default_options = {
 		/* Configuration options */
-		unique: true,				// indicates if there can be duplicated selected elements (same value), this parameter is handled by ra.object_collection
-	 	multiple: false,			// type = single or multiple? Allows user to select many objects, or just one?											
+		unique: true,				// indicates if there can be duplicated selected elements (same value), this parameter is handled by ra.object_collection										
 	 	deselect: 'flag',			// possible options: flag, remove, false
 	 	deselectFlagName: '_destroy',
 	 	initialData: 'infer',		// available options: 'infer', array of elements object [ { label: x, value: y } [, ... {}] ] or false
@@ -152,34 +200,9 @@ RA.debug = true;
 
  			/* Overwritable Rendering Methods */	
 			/* In all those methods, this references the cointaner element upon which the plugin has been called */
-			
-			/* $domObjToAppend is the result of the method renderItem, a jquery-wrapped dom element */
-			/* elementObject is the native js object that was inserted into the collection */
-			appendItem: function($domObjToAppend, elementObject, data) {
-				this.trigger(pluginName+".beforeAppendItem", [$domObjToAppend, elementObject, data]);
-					$domObjToAppend.appendTo(data.innerContainer);
-				this.trigger(pluginName+".afterAppendItem", [$domObjToAppend, elementObject, data]);
-				return $domObjToAppend;
-			},
-
-			/* elementObject is the native js object that was inserted into the collection */
-			renderItem: function(elementObject, data) {
-				this.trigger(pluginName+".beforeRenderItem", [elementObject, data]);
-				var renderedItem = $(data.options.display.singleItem);
-					data.options.display.renderItemTitle.apply(this, [renderedItem, elementObject, data]);
-					private_methods.renderHiddenInputs(renderedItem, elementObject, data);
-					// generate remover behavior and attach
-					if(data.options.deselect) {
-						private_methods.renderDeselectLink(renderedItem, elementObject, data);
-					}
-				this.trigger(pluginName+".afterRenderItem", [renderedItem, elementObject, data]);
-				return renderedItem;
-			},
-
-			/* Must render AND append the item title to the supplied renderedItem */
-			renderItemTitle: function(renderedItem, elementObject, data) {
-				return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
-			}	 		
+			appendItem: private_methods.appendItem,
+			renderItem: private_methods.renderItem,
+			renderItemTitle: private_methods.renderItemTitle	
 	 	}		
 	}
 
@@ -202,27 +225,11 @@ RA.debug = true;
 			 			.data(pluginName, data);			// re-saves data
 
 			 		// initialize elements, remove any content from inside and after that append the container
-			 		$container[pluginName]("initializeData").html('').append(data.innerContainer);				
+			 		private_methods.initializeData($container, data);
+			 		$container.html('').append(data.innerContainer);				
 				}
 			});
 
-		}, // init
-		initializeData: function() {
-			var data = this.data(pluginName);
-			this.trigger(pluginName+".beforeInitializeData", [data]);
-
-			var elements = []
-			if(data.options.initialData == 'infer') {
-				var elements = private_methods.inferDataFromInputs(this, data);
-			} else if (data.options.initialData instanceof Array) {
-				var elements = data.options.initialData;
-			}
-			if(elements && elements instanceof Array)
-				private_methods.initializeFromElementsArray(this, elements, data);
-			
-			this.data(pluginName, data);
-			this.trigger(pluginName+".afterInitializeData", [data]);
-			return this;
 		},
 		/* Inserts an element into the collection, while also 
 		 * triggering the applyable events;
@@ -235,9 +242,10 @@ RA.debug = true;
 			var success = data.collection.insert(element_to_insert);
 			if(success) {
 				// render and append the object
-				element_to_insert._prefix = private_methods.interpolatePrefix(data.options.hiddenInputs.namePrefix, element_to_insert);
+				if(!element_to_insert.meta) element_to_insert.meta = {};
+				element_to_insert.meta._prefix = private_methods.interpolatePrefix(data.options.hiddenInputs.namePrefix, element_to_insert);
 				var appendedDomObject = data.options.display.renderItem.apply(this, [element_to_insert, data]);
-				element_to_insert._renderedItem = appendedDomObject;
+				element_to_insert.meta._renderedItem = appendedDomObject;
 				data.options.display.appendItem.apply(this, [appendedDomObject, element_to_insert, data]);
 
 				// event callback
@@ -263,7 +271,7 @@ RA.debug = true;
 			this.trigger(pluginName+".beforeRemove", [elementObject, index, data]);
 
 			if(index !== null) {
-				var renderedItem = elementObject._renderedItem;
+				var renderedItem = elementObject.meta._renderedItem;
 
 				if(data.options.deselect == "remove")
 					renderedItem.remove();
