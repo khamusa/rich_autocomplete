@@ -4,46 +4,17 @@ RA.debug = true;
 (function() {
 	var pluginName = "selectableContainer";
 
-	/* "Private Methods */
-	var private_methods = {
-		/* Overwritable Rendering Methods */	
-		/* In all those methods, this references the cointaner element upon which the plugin has been called */
-		/* $domObjToAppend is the result of the method renderItem, a jquery-wrapped dom element */
-		/* elementObject is the native js object that was inserted into the collection */
-		appendItem: function($domObjToAppend, elementObject, data) {
-			this.trigger(pluginName+".beforeAppendItem", [$domObjToAppend, elementObject, data]);
-				$domObjToAppend.appendTo(data.innerContainer);
-			this.trigger(pluginName+".afterAppendItem", [$domObjToAppend, elementObject, data]);
-			return $domObjToAppend;
-		},
-		/* elementObject is the native js object that was inserted into the collection */
-		renderItem: function(elementObject, data) {
-			this.trigger(pluginName+".beforeRenderItem", [elementObject, data]);
-			var renderedItem = $(data.options.display.singleItem);
-				data.options.display.renderItemTitle.apply(this, [renderedItem, elementObject, data]);
-				private_methods.renderHiddenInputs(renderedItem, elementObject, data);
-				// generate remover behavior and attach
-				if(data.options.deselect) {
-					private_methods.renderDeselectLink(renderedItem, elementObject, data);
-				}
-			this.trigger(pluginName+".afterRenderItem", [renderedItem, elementObject, data]);
-			return renderedItem;
-		},
-		/* Must render AND append the item title to the supplied renderedItem */
-		renderItemTitle: function(renderedItem, elementObject, data) {
-			return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
-		},
-
-		/* Other methods, non-overwritable */
-		// this refer to the private_methods object itself
-
+	// this refer to the private_methods object itself
+	/* Ausiliary implementation methods */
+	/* In all of them, this refer to the object itself */
+	var implementation_methods = {
 		// initialize data for the input, wich might be from the options object or infered from html dom objects
 		initializeData: function($container, data) {
 			$container.trigger(pluginName+".beforeInitializeData", [data]);
 
 			var elements = []
 			if(data.options.initialData == 'infer') 
-				var elements = private_methods.inferDataFromInputs($container, data);
+				var elements = this.inferDataFromInputs($container, data);
 			else if (data.options.initialData instanceof Array) 
 				var elements = data.options.initialData;
 			
@@ -53,19 +24,38 @@ RA.debug = true;
 			$container.trigger(pluginName+".afterInitializeData", [data]);
 			return $container;
 		},
-		/* Will render, attach event AND append the "close"/"deselect" icon to the supplied renderedItem 
-		 * Returns the jquery-wrapped dom element
+		initializeFromElementsArray: function($this, elements, data) {	
+			for(var i =0; i < elements.length; i++)
+				$this[pluginName]('insert', elements[i]);
+		},
+		/* This method infer from the inner html input or select fields the elements to be initally added to our collection
+		 * Oh, and it rocks! :D
 		*/
-		renderDeselectLink: function(renderedItem, elementObject, data) {
-			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
-			if(data.options.deselect == "flag")
-					deselect.append('<input type="hidden" name="'+elementObject.meta._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", data.options.deselectFlagName)+'" value="0">')
+		inferDataFromInputs: function(context, data) {
+			function escapeRegExp(str) { return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); }
+			var valuePropertyFormat = data.options.hiddenInputs.propertyFormat.replace("%s{property}", "value");
+			var propertyNameDelimiters = valuePropertyFormat.split('value')
+			if(propertyNameDelimiters[0])
+						propertyNameDelimiters[0] = new RegExp("^"+escapeRegExp(propertyNameDelimiters[0]));
+			if(propertyNameDelimiters[1])
+						propertyNameDelimiters[1] = new RegExp(escapeRegExp(propertyNameDelimiters[1])+"$");
 
-			deselect.click(function() {
-						// calls the collection removeElement method
-						$(this).closest('.'+data.options.display.containerClass)[pluginName]('removeElement', elementObject);
-					});
-			return deselect;
+			var elements = [];		// the final array we will return
+			var candidateValues = context.find('[name*="'+valuePropertyFormat+'"]').each(function() {
+				var name = $(this).attr('name');
+				var prefix = name.replace(valuePropertyFormat, "");
+				var newObj = {};
+				context.find('[name^="'+prefix+'"]').each(function() {
+					var $this = $(this);
+					var attrName = $this.attr('name').replace(prefix, "");
+					if(propertyNameDelimiters[0]) attrName = attrName.replace(propertyNameDelimiters[0], "");
+					if(propertyNameDelimiters[1]) attrName = attrName.replace(propertyNameDelimiters[1], "");
+					if((attrName != data.options.deselectFlagName)&&(attrName != "meta")) // we don't want to read a _destroy attribute, for example
+						newObj[attrName] = $this.val();					
+				});
+				elements.push(newObj); // pushes the object, doesn't matter if it is valid or not
+			});
+			return elements;
 		},
 		/*
 		 * Renders hidden inputs for a selected element and attaches them to the rendered jquery-wrapped dom obj
@@ -120,38 +110,43 @@ RA.debug = true;
 			} // while
 			return prefix
 		},
-		initializeFromElementsArray: function($this, elements, data) {	
-			for(var i =0; i < elements.length; i++)
-				$this[pluginName]('insert', elements[i]);
-		},
-		/* This method infer from the inner html input or select fields the elements to be initally added to our collection
-		 * Oh, and it rocks! :D
-		*/
-		inferDataFromInputs: function(context, data) {
-			function escapeRegExp(str) { return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); }
-			var valuePropertyFormat = data.options.hiddenInputs.propertyFormat.replace("%s{property}", "value");
-			var propertyNameDelimiters = valuePropertyFormat.split('value')
-			if(propertyNameDelimiters[0])
-						propertyNameDelimiters[0] = new RegExp("^"+escapeRegExp(propertyNameDelimiters[0]));
-			if(propertyNameDelimiters[1])
-						propertyNameDelimiters[1] = new RegExp(escapeRegExp(propertyNameDelimiters[1])+"$");
+		implementDeselect: function (deselect, elementObject, data) {
+			if(data.options.deselect == "flag")
+				deselect.append('<input type="hidden" name="'+elementObject.meta._prefix+data.options.hiddenInputs.propertyFormat.replace("%s{property}", data.options.deselectFlagName)+'" value="0">')
 
-			var elements = [];		// the final array we will return
-			var candidateValues = context.find('[name*="'+valuePropertyFormat+'"]').each(function() {
-				var name = $(this).attr('name');
-				var prefix = name.replace(valuePropertyFormat, "");
-				var newObj = {};
-				context.find('[name^="'+prefix+'"]').each(function() {
-					var $this = $(this);
-					var attrName = $this.attr('name').replace(prefix, "");
-					if(propertyNameDelimiters[0]) attrName = attrName.replace(propertyNameDelimiters[0], "");
-					if(propertyNameDelimiters[1]) attrName = attrName.replace(propertyNameDelimiters[1], "");
-					if((attrName != data.options.deselectFlagName)&&(attrName != "meta")) // we don't want to read a _destroy attribute, for example
-						newObj[attrName] = $this.val();					
-				});
-				elements.push(newObj); // pushes the object, doesn't matter if it is valid or not
-			});
-			return elements;
+			deselect.click(function() {
+						// calls the collection removeElement method
+						$(this).closest('.'+data.options.display.containerClass)[pluginName]('removeElement', elementObject);
+					});	
+		}
+	}
+
+	/* "Private Methods */
+	var overwritable_methods = {
+		/* Overwritable Rendering Methods */	
+		/* In all those methods, this references the cointaner element upon which the plugin has been called */
+		/* $domObjToAppend is the result of the method renderItem, a jquery-wrapped dom element */
+		/* elementObject is the native js object that was inserted into the collection */
+		appendItem: function($domObjToAppend, elementObject, data) {
+			$domObjToAppend.appendTo(data.innerContainer);
+			return $domObjToAppend;
+		},
+		/* elementObject is the native js object that was inserted into the collection */
+		renderItem: function(elementObject, data) {
+			var renderedItem = $(data.options.display.singleItem);
+			data.options.display.renderItemTitle.apply(this, [renderedItem, elementObject, data]);
+			return renderedItem;
+		},
+		/* Must render AND append the item title to the supplied renderedItem */
+		renderItemTitle: function(renderedItem, elementObject, data) {
+			return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
+		},
+		/* Will render, attach event AND append the "close"/"deselect" icon to the supplied renderedItem 
+		 * Returns the jquery-wrapped dom element
+		*/
+		renderDeselectLink: function(renderedItem, elementObject, data) {
+			var deselect = $(data.options.display.deselectLink).appendTo(renderedItem);
+			return deselect;
 		}
 	}
 
@@ -200,10 +195,10 @@ RA.debug = true;
 
  			/* Overwritable Rendering Methods */	
 			/* In all those methods, this references the cointaner element upon which the plugin has been called */
-			appendItem: private_methods.appendItem,
-			renderItem: private_methods.renderItem,
-			renderItemTitle: private_methods.renderItemTitle	
-	 	}		
+			appendItem: overwritable_methods.appendItem,
+			renderItem: overwritable_methods.renderItem,
+			renderItemTitle: overwritable_methods.renderItemTitle
+			}		
 	}
 
 	var methods = {
@@ -225,7 +220,7 @@ RA.debug = true;
 			 			.data(pluginName, data);			// re-saves data
 
 			 		// initialize elements, remove any content from inside and after that append the container
-			 		private_methods.initializeData($container, data);
+			 		implementation_methods.initializeData($container, data);
 			 		$container.html('').append(data.innerContainer);				
 				}
 			});
@@ -234,22 +229,33 @@ RA.debug = true;
 		/* Inserts an element into the collection, while also 
 		 * triggering the applyable events;
 		*/
-		insert: function(element_to_insert) {
+		insert: function(elementObject) {
 			var data = this.data(pluginName);
-			this.trigger(pluginName+".beforeInsert", [element_to_insert, data]);
+			this.trigger(pluginName+".beforeInsert", [elementObject, data]);
 
-			// insert the element_to_insert
-			var success = data.collection.insert(element_to_insert);
+			// insert the elementObject
+			var success = data.collection.insert(elementObject);
 			if(success) {
 				// render and append the object
-				if(!element_to_insert.meta) element_to_insert.meta = {};
-				element_to_insert.meta._prefix = private_methods.interpolatePrefix(data.options.hiddenInputs.namePrefix, element_to_insert);
-				var appendedDomObject = data.options.display.renderItem.apply(this, [element_to_insert, data]);
-				element_to_insert.meta._renderedItem = appendedDomObject;
-				data.options.display.appendItem.apply(this, [appendedDomObject, element_to_insert, data]);
+				if(!elementObject.meta) elementObject.meta = {};
+				elementObject.meta._prefix = implementation_methods.interpolatePrefix(data.options.hiddenInputs.namePrefix, elementObject);
+				
+				this.trigger(pluginName+".beforeRenderItem", [elementObject, data]);
+					var appendedDomObject = data.options.display.renderItem.apply(this, [elementObject, data]);
+				this.trigger(pluginName+".afterRenderItem", [appendedDomObject, elementObject, data]);
+				implementation_methods.renderHiddenInputs(appendedDomObject, elementObject, data);
+				
+				if(data.options.deselect) {
+					var deselect = overwritable_methods.renderDeselectLink.apply(this, [appendedDomObject, elementObject, data]);		
+					implementation_methods.implementDeselect(deselect, elementObject, data);
+				}	
 
+				elementObject.meta._renderedItem = appendedDomObject;
+				this.trigger(pluginName+".beforeAppendItem", [appendedDomObject, elementObject, data]);
+					data.options.display.appendItem.apply(this, [appendedDomObject, elementObject, data]);
+				this.trigger(pluginName+".afterAppendItem", [appendedDomObject, elementObject, data]);
 				// event callback
-				this.trigger(pluginName+".afterInsert", [element_to_insert, appendedDomObject, data]);
+				this.trigger(pluginName+".afterInsert", [elementObject, appendedDomObject, data]);
 			} 
 			return this;			
 		},
