@@ -6,66 +6,82 @@
 		var pluginName = "richAutocomplete";
 		var selectableContainerName = "selectableContainer";
 		var default_options = {
+			// behaviour like options
 	 	 	minLength: 2,						// jquery-ui parameter, how many characters does the user has to type before receiving suggestions?
 	 	 	multiple: true,						// type = single or multiple? Allows user to select many objects, or just one?
-	 	 	displaySelectedDescription: true, 	// shall we display the selected item's description?
-	 	 	additionalInput: null,				// format: { input: "<input>", params: {}},
-	 	 	placeholderText: "Comece a digitar...", // straight-forward
+	 	 	// future: additionalInput: null,				// format: { input: "<input>", params: {}},
 	 	 	source: [],							// source for the autocomplete
-	 	 	selectableContainer: {}
+	 	 	// display-like options
+	 	 	display: {
+	 	 		placeholderText: "Procurar ...", // straight-forward
+	 	 		wrappingContainer: "<div class='rich_autocomplete_wrapper'></div>",
+	 	 		searchInput: "<input class='ra_autocomplete_input' type='text'>"
+	 	 	}
 	 	 }; // end default_options
 
 
+var implementation_methods = {}
+
 var methods = {
-	 init : function( options ) {
+	 init : function( opts ) {
 	 		var options = $.extend(true, {}, default_options, opts);
 
 			return this.each(function(){ 
 				var $container = $(this);
 
+				// we assume richAutocomplete is called in the SelectableCollection container element
 				var data = $container.data(pluginName);
 				// Initialize the plugin if the plugin hasn't been initialized yet
 				if ( ! data ) {
 					data = { options: options }
-					$container.selectableContainer(options.selectableContainer);		
 					
-					// initialize the jquery-ui plugin that will be hooked into our customization
-					$inputField.autocomplete({
+					if(!options.multiple) options.limitElements = 1;
+					$container[selectableContainerName](options);	
+
+					var $wrapper = $(options.display.wrappingContainer);
+					var $searchInput = $(options.display.searchInput)
+							.attr('placeholder', data.options.display.placeholderText);
+
+					$container
+						.wrap($wrapper)
+						.parent().append($searchInput);
+					
+					$searchInput.autocomplete({
 						autoFocus: true,
 						minLength: options.minLength,
-						source: options.source,
-					
-						focus: function(event, ui) { event.preventDefault() }, // do nothing
-						select: function( event, ui ) {
-							$this[pluginName]('select', ui.item);
-							return false;
-						}
-						}); // autocomplete
-						/*.data('uiAutocomplete')._renderItem = function( ul, item ) {
-							var $a = $( "<a>" ).text( item.label );
-							if(item.desc && item.desc != "") {
-								$a.append( $('<span class="ra-menu-desc"></span>').html(item.desc) );
+						source: options.source,					
+							focus: function(event, ui) { event.preventDefault() }, // do nothing
+							select: function( event, ui ) {
+								$container[pluginName]('select', ui.item);
+								return false;
 							}
-							return $( "<li>" ).append( $a ).appendTo(ul);
-						};	*/			
+						});
+					// data.wrapper.
+					// initialize the jquery-ui plugin that will be hooked into our customization
+					/*
+					/*.data('uiAutocomplete')._renderItem = function( ul, item ) {
+						var $a = $( "<a>" ).text( item.label );
+						if(item.desc && item.desc != "") {
+							$a.append( $('<span class="ra-menu-desc"></span>').html(item.desc) );
+						}
+						return $( "<li>" ).append( $a ).appendTo(ul);
+					};	*/			
 				 	
-			 		$this.trigger(pluginName+'.afterInitialize', [data]);
+				 	$container.data(pluginName, data);
+			 		$container.trigger(pluginName+'.afterInitialize', [data]);
 		 		} // data
-			});
-	 }, 
+			}); // each
+	 }, // init
 	 // selects an element
 	 // parameter to_select = { id: 2, label: "Maria José", desc: "Additional description" }
 	 select : function( to_select ) {
 		var data = this.data(pluginName);
 		this.trigger(pluginName+'.beforeInsert', [data, to_select]);
 		
-		if(data.options.multiple) {
-			// adiciono o novo item, a uniqueness será gerida pelo selectableContainer
-		} else {
-			// removo qualquer elemento anteriormente adicionado
-		
-			// adiciono o novo item
- 			// escondo as coisas necessárias e mostro as outras			
+		this[selectableContainerName]('insert', to_select);
+
+		if(!data.options.multiple) {
+			// single type will need additional stuff in the future	
 		}
 			
 		this.trigger(pluginName+'.afterInsert', [data, to_select]);

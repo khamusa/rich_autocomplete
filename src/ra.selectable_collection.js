@@ -135,11 +135,20 @@ RA.debug = true;
 		renderItem: function(elementObject, data) {
 			var renderedItem = $(data.options.display.singleItem);
 			data.options.display.renderItemTitle.apply(this, [renderedItem, elementObject, data]);
+			data.options.display.renderItemDesc.apply(this, [renderedItem, elementObject, data]);
 			return renderedItem;
 		},
 		/* Must render AND append the item title to the supplied renderedItem */
 		renderItemTitle: function(renderedItem, elementObject, data) {
 			return $(data.options.display.title).text(elementObject.label).appendTo(renderedItem);
+		},
+		/* Must render AND append the item additional description whenever appliable */
+		renderItemDesc: function(renderedItem, elementObject, data) {
+			var descTxt = elementObject[data.options.display.descriptionProperty];
+ 			if(descTxt)
+				return $(data.options.display.description).text(descTxt).appendTo(renderedItem);
+			else
+				return false;
 		},
 		/* Will render, attach event AND append the "close"/"deselect" icon to the supplied renderedItem 
 		 * Returns the jquery-wrapped dom element
@@ -153,8 +162,10 @@ RA.debug = true;
 	var default_options = {
 		/* Configuration options */
 		unique: true,				// indicates if there can be duplicated selected elements (same value), this parameter is handled by ra.object_collection										
-	 	deselect: 'flag',			// possible options: flag, remove, false
-	 	deselectFlagName: '_destroy',
+	 	limitElements: false,			// limit the amount of maximum selected elements, false or 0 means no limit
+	 	limitMode: 'overwrite_last',	// 'overwrite_last', 'remove_first' or anything else will mean 'no action'
+	 	deselect: 'flag',			// possible options: "flag", "remove", false
+	 	deselectFlagName: '_destroy',	// if deselect is set to "flag", this is the parameter name that will be used
 	 	initialData: 'infer',		// available options: 'infer', array of elements object [ { label: x, value: y } [, ... {}] ] or false
 	 	hiddenInputs: {				// specifies options for the hidden inputs we want to insert along selected elements
 	 		// namePrefix
@@ -184,20 +195,22 @@ RA.debug = true;
 	 		properties: true,
 	 		propertyFormat: '[%s{property}]'
 	 	},
-	 	display: {					// display configuration
-	 		elementClass: 'selected_element',												 	
+	 	display: {														// display configuration
+	 		elementClass: 'selected_element',							// the class added to a single element rendered											 	
 	 		containerClass: 'selectable_container',								// the class to be applied to the container upon initialization
  		
- 			innerContainer: '<div class="inner_selectable_container"></div>',	// the inner container which will contain the rendered items
- 			singleItem: '<div class="single_item"></div>',						// the element used to render each item
- 			title: '<span class="single_item_title"></div>',
- 			deselectLink: '<span class="single_item_deselect">&times;</span>',		// html to build the "close link" which deselects an element
-
+ 			innerContainer: '<div class="inner_selectable_container"></div>',	// the inner container html which will contain the rendered items
+ 			singleItem: '<div class="single_item"></div>',						// the inner single element html (each inserted html will be appended to it)
+ 			title: '<span class="single_item_title"></div>',					// how to build the title tag Note: overwritable by renderItemTitle option
+ 			deselectLink: '<span class="single_item_deselect close">&times;</span>',		// html to build the "close link" which deselects an element
+ 			description: '<span class="single_item_desc"></span>',				// false means hide description. 	
+ 			descriptionProperty: 'desc',										// property name to be used as description
  			/* Overwritable Rendering Methods */	
 			/* In all those methods, this references the cointaner element upon which the plugin has been called */
 			appendItem: overwritable_methods.appendItem,
 			renderItem: overwritable_methods.renderItem,
-			renderItemTitle: overwritable_methods.renderItemTitle
+			renderItemTitle: overwritable_methods.renderItemTitle,
+			renderItemDesc: overwritable_methods.renderItemDesc
 			}		
 	}
 
@@ -212,7 +225,7 @@ RA.debug = true;
 				// Initialize the plugin if the plugin hasn't been initialized yet
 				if ( ! data ) {
 					data = { options: options }
-					data.collection = new RA.ObjectCollection({ unique: options.unique });
+					data.collection = new RA.ObjectCollection({ unique: options.unique, maxElements: options.maxElements });
 					data.innerContainer = $(data.options.display.innerContainer);
 
 					$container
@@ -231,6 +244,18 @@ RA.debug = true;
 		*/
 		insert: function(elementObject) {
 			var data = this.data(pluginName);
+			// check limits
+			if((data.options.limitElements) && (data.collection.length >= data.options.limitElements))
+			{
+				if(data.options.limitMode == 'overwrite_last')
+					this[pluginName]('removeElement', data.collection.at(data.collection.length - 1));
+				else if(data.options.limitMode == 'remove_first')
+					this[pluginName]('removeElement', data.collection.at(0));
+				else // no action
+					return this;
+			}
+
+
 			this.trigger(pluginName+".beforeInsert", [elementObject, data]);
 
 			// insert the elementObject
@@ -244,7 +269,7 @@ RA.debug = true;
 					var appendedDomObject = data.options.display.renderItem.apply(this, [elementObject, data]);
 				this.trigger(pluginName+".afterRenderItem", [appendedDomObject, elementObject, data]);
 				implementation_methods.renderHiddenInputs(appendedDomObject, elementObject, data);
-				
+
 				if(data.options.deselect) {
 					var deselect = overwritable_methods.renderDeselectLink.apply(this, [appendedDomObject, elementObject, data]);		
 					implementation_methods.implementDeselect(deselect, elementObject, data);
