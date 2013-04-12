@@ -9,122 +9,60 @@
         	.container { width: 970px; }
         	input { width: 550px; /*display: block !important;*/}
         	
-        	div.test { margin-bottom:15px ; }
+        	div.test { margin-bottom:25px ; }
         	.testLink { margin-right: 5px; padding-right: 5px; border-right: 1px dotted #ccc;}
+			.ui-autocomplete {
+			  background: #fff;
+			  border: 1px solid #ccc;
+			  border-top: none;
+			  -webkit-border-radius: 0px 0px 3px 3px;
+			  border-radius: 0px 0px 3px 3px;
+			  }
+			  .ui-state-focus {
+			    border: 1px solid #ccc;
+			    background: #eee;
+			    -webkit-border-radius: 3px;
+			    border-radius: 3px;
+			  }
         </style>
-     </head>
-  <body>
-  	<div class="container">
-  		<div class="test">
-  		<h3>Test #1 - Multiple, unique, initialization with additional select and UNIQUE selected values:</h3>
-	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
-			<a class="testLink debugCollection" href="#demo1">Debug collection</a>
-			<div id="demo1"></div>
-			<a class="restLink removeWithValue" href="javascript: 1;">Remove with value = </a><input type="text" />
-		</div>
-		<div class="test">
-  		<h3>Test #2 - Multiple, non unique, initialization with additional select:</h3>
-	  		
-	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
-			<a class="testLink debugCollection" href="#demo2">Debug collection</a>
-			<div id="demo2"></div>
-		</div>
-		<div class="test">
-  		<h3>Test #3 - Multiple, unique value, with inital values read from html markup, removed elements get removed from the dom tree:</h3>
-	  		
-	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
-			<a class="testLink debugCollection" href="#demo3">Debug collection</a>
-			<div id="demo3">
-				<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
-				<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
 
-				<input type="hidden" value="Felipe Maria" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][label]">
-				<input type="hidden" value="2" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][value]">
-
-				<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
-				<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
-
-				<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
-				<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
-			</div>
-		</div>
-		<div class="test">
-  		<h3>Test #4 - Multiple with autocomplete, with inital values read from html markup, limited to 2 insertions:</h3>
-	  		
-	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
-			<a class="testLink debugCollection" href="#demo4">Debug collection</a>
-			<div id="demo4">
-				<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
-				<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
-
-				<input type="hidden" value="Felipe Maria" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][label]">
-				<input type="hidden" value="2" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][value]">
-
-				<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
-				<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
-
-				<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
-				<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
-			</div>
-		</div>
-		<div class="test">
-  		<h3>Test #5 - Single with autocomplete, with inital values read from html markup - it rocks!:</h3>
-	  		
-	  		<a class="testLink add" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1}' >Add José Pereira(1)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3}' >Add Marta da Silva (3)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4}' >Add João Gustavo(4)</a>
-			<a class="testLink add" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}' >Add Stella Artois(5)</a>
-			<a class="testLink debugCollection" href="#demo4">Debug collection</a>
-			<div id="demo5">
-				<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
-				<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
-
-				<input type="hidden" value="Felipe Maria" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][label]">
-				<input type="hidden" value="2" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][value]">
-
-				<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
-				<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
-
-				<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
-				<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
-			</div>
-		</div>
-	</div>	              	
-	
-    <!-- Javascripts
+		<!-- Javascripts
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
     <script src="./lib/jquery.js" type="text/javascript"></script>
     <script src="./lib/jquery-ui-1.10.0.custom.min.js" type="text/javascript"></script>
     <script src="./src/ra.object_collection.js" type="text/javascript"></script>
     <script src="./src/ra.selectable_collection.js" type="text/javascript"></script>
-    <script src="./src/rich_autocompletev2.js" type="text/javascript"></script>
+    <script src="./src/rich_autocomplete.js" type="text/javascript"></script>
+     </head>
+  <body>
+  	<div class="container">
+  		<h2>Rich Autocomplete Demo</h2>
+		<div class="test">
+  		<h3>Demo #1 - Up to 2 selections, with inital data inferred from html markup, hides autocomplete when full:</h3>
+	  		
+	  		<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1, "desc": "hi!"}' >Add José Pereira(1)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2, "desc": "This is pretty cool"}' >Add Felipe Maria(2)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3, "desc": "I am a very nice person"}' >Add Marta da Silva (3)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4, "desc": "Whats up?"}' >Add João Gustavo(4)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}', "desc": "Wanna take a beer?" >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo1">Debug collection</a>
+			
+				<div id="demo1">				
+					<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
+					<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
+
+					<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
+					<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
+				</div>
+			
+		</div>
+
 
 	<script type="text/javascript">
-		$('#demo1').selectableContainer({
-				hiddenInputs: { 
-					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
-				}
-			})
+		
+		$('#demo1')
 			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
-				var $select = $("<select>");
+				var $select = $("<select class='additional-input'>");
 			
 				$("<option value=''> -- Sex -- </option>").appendTo($select);
 				$("<option value='F'> Female </option>").appendTo($select);
@@ -134,64 +72,7 @@
 					.bind('change', function () {
 						elementObject["sex"] = $(this).val();
 					})
-					.appendTo(renderedItem);
-			});
-
-		$('#demo2').selectableContainer({
-				hiddenInputs: { 
-					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
-				},
-				unique:false
-			})
-			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
-				var $select = $("<select>");
-			
-				$("<option value=''> -- Sex -- </option>").appendTo($select);
-				$("<option value='F'> Female </option>").appendTo($select);
-				$("<option value='M'> Male </option>").appendTo($select);
-				
-				$select
-					.bind('change', function () {
-						elementObject["sex"] = $(this).val();
-					})
-					.appendTo(renderedItem);
-			});
-
-		$('#demo3')
-			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
-				var $select = $("<select>");
-			
-				$("<option value=''> -- Sex -- </option>").appendTo($select);
-				$("<option value='F'> Female </option>").appendTo($select);
-				$("<option value='M'> Male </option>").appendTo($select);
-				
-				$select
-					.bind('change', function () {
-						elementObject["sex"] = $(this).val();
-					})
-					.appendTo(renderedItem);
-			})
-			.selectableContainer({
-				hiddenInputs: { 
-					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
-				},
-				unique: true,
-				deselect: 'remove'
-			});
-
-		$('#demo4')
-			.bind('selectableContainer.afterRenderItem', function(evt, renderedItem, elementObject, data){
-				var $select = $("<select>");
-			
-				$("<option value=''> -- Sex -- </option>").appendTo($select);
-				$("<option value='F'> Female </option>").appendTo($select);
-				$("<option value='M'> Male </option>").appendTo($select);
-				
-				$select
-					.bind('change', function () {
-						elementObject["sex"] = $(this).val();
-					})
-					.appendTo(renderedItem);
+					.prependTo(renderedItem);
 			})
 			.richAutocomplete({
 				hiddenInputs: { 
@@ -205,10 +86,31 @@
 				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
 				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
 				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
-				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}]
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}],
+				display: {
+					description: false
+				}
 			});
+	</script>
 
-		$('#demo5')
+		<div class="test">
+  		<h3>Demo #2 - Single selection, hides autocommplete, with descriptions: </h3>
+	  		<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1, "desc": "hi!"}' >Add José Pereira(1)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2) - no description</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3, "desc": "I am a very nice person"}' >Add Marta da Silva (3)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4, "desc": "Whats up?"}' >Add João Gustavo(4)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}', "desc": "Wanna take a beer?" >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo2">Debug collection</a>
+			
+				<div id="demo2">
+					<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
+					<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
+					<input type="hidden" value="I am a very nice person" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][desc]">
+				</div>
+		</div>
+
+		<script type="text/javascript">
+		$('#demo2')
 			.richAutocomplete({
 				hiddenInputs: { 
 					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
@@ -224,18 +126,97 @@
 				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}]
 			});
 
+		$('a.addRich').click(function() {
+			$(this).closest('.test').find('.selectable-container:first')
+				.richAutocomplete('select', JSON.parse($(this).attr('data-element')) );
+		});
+
 		$('a.add').click(function() {
-			$(this).closest('.test').find('.selectable_container:first')
+			$(this).closest('.test').find('.selectable-container:first')
 				.selectableContainer('insert', JSON.parse($(this).attr('data-element')) );
 		});
 		$('a.debugCollection').click(function() {
-			alert(   JSON.stringify($(this).closest('.test').find('.selectable_container:first')
+			alert(   JSON.stringify($(this).closest('.test').find('.selectable-container:first')
 				.selectableContainer('getPairs'))   );
 
 		});
 		$('a.removeWithValue').click(function() {
-			$(this).closest('.test').find('.selectable_container:first')
+			$(this).closest('.test').find('.selectable-container:first')
 				.selectableContainer('remove', $(this).next().val());
 		});
 		</script>
+
+		<div class="test">
+  		<h3>Demo #3 - Single selection, unlimited, accepts duplicates:</h3>
+	  		
+	  		<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "José Pereira", "value": 1, "desc": "hi!"}' >Add José Pereira(1)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Felipe Maria", "value": 2}' >Add Felipe Maria(2) - no desc</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Marta da Silva ", "value": 3, "desc": "I am a very nice person"}' >Add Marta da Silva (3)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "João Gustavo", "value": 4, "desc": "Whats up?"}' >Add João Gustavo(4)</a>
+			<a class="testLink addRich" href="javascript: 1;" data-element='{ "label": "Stella Artois", "value": 5}', "desc": "Wanna take a beer?" >Add Stella Artois(5)</a>
+			<a class="testLink debugCollection" href="#demo3">Debug collection</a>
+			
+				<div id="demo3">
+					<input type="hidden" value="Marta da Silva" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][label]">
+					<input type="hidden" value="3" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][value]">
+					<input type="hidden" value="Bugue ugue!" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418562][desc]">
+
+					<input type="hidden" value="Felipe Maria" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][label]">
+					<input type="hidden" value="2" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418563][value]">
+
+					<input type="hidden" value="João Gustavo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][label]">
+					<input type="hidden" value="4" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][value]">
+					<input type="hidden" value="Beeeeer!" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418564][desc]">
+
+					<input type="hidden" value="José Pereira" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][label]">
+					<input type="hidden" value="1" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][value]">
+					<input type="hidden" value="Hellooooo" name="label[teste]value[Bugue]literal[bugueugue]random[14331177156418565][desc]">
+				</div>
+			
+		</div>
+	</div>	    
+
+	<script type="text/javascript">
+		$('#demo3')
+			.richAutocomplete({
+				hiddenInputs: { 
+					namePrefix: "label[%s{propriedade1|label}]value[%s{prop2|prop3|value}]literal[%s{bugue|ugue|bugueugue}]random[%s{bugue|ugue|random}]"
+				},
+				unique: false,
+				multiple: true,
+				source: [{ label: "Maria Joana", value: 1, desc: "Pessoa muito interessante"},
+				{ label: "Marta Pereira", value: 2, desc: "Pessoa muito interessante"},
+				{ label: "Ricardo Pereira", value: 4, desc: "Pessoa muito interessante"},
+				{ label: "Samara Felippo", value: 5, desc: "Pessoa muito interessante"},
+				{ label: "Stella Artois", value: 6, desc: "Pessoa muito interessante"},
+				{ label: "Cibele Gomes", value: 7, desc: "Pessoa muito interessante"},
+				{ label: "Maria Mônica", value: 8, desc: "Pessoa muito interessante"}]
+			});
+
+		$('a.addRich').click(function() {
+			$(this).closest('.test').find('.selectable-container:first')
+				.richAutocomplete('select', JSON.parse($(this).attr('data-element')) );
+		});
+
+		$('a.add').click(function() {
+			$(this).closest('.test').find('.selectable-container:first')
+				.selectableContainer('insert', JSON.parse($(this).attr('data-element')) );
+		});
+		$('a.debugCollection').click(function() {
+			alert(   JSON.stringify($(this).closest('.test').find('.selectable-container:first')
+				.selectableContainer('getPairs'))   );
+
+		});
+		$('a.removeWithValue').click(function() {
+			$(this).closest('.test').find('.selectable-container:first')
+				.selectableContainer('remove', $(this).next().val());
+		});
+		</script>          	
+	
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
 </body></html>

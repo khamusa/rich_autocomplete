@@ -183,14 +183,3 @@ RA.ObjectCollection = function(opts) {
 
 	}
 
-var objC = new RA.ObjectCollection();
-	objC.insert({ label: "HAHA", value: 1});
-	objC.insert({ label: "bu", value:"1"});
-	objC.insert({ label: "HAHA2", value: 2});
-	objC.insert({ label: "HAHA3", value: 3});
-
-	objC.index({ label: "ha", value: "3" });
-	objC.index("Hahahah");
-	objC.index(new String("String object"));
-
-

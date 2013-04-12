@@ -1,6 +1,5 @@
 /* This class will encapsulate an ObjectCollection and supply a default display interface for it, while
  * still allowing for the programmer to overwrite every display aspect through the options passed */
-RA.debug = true;
 (function() {
 	var pluginName = "selectableContainer";
 
@@ -119,6 +118,9 @@ RA.debug = true;
 						// calls the collection removeElement method
 						$(this).closest('.'+data.options.display.containerClass)[pluginName]('removeElement', elementObject);
 					});	
+		},
+		isFull: function(data) {
+			return (data.options.limitElements) && (data.collection.length >= data.options.limitElements)
 		}
 	}
 
@@ -147,7 +149,7 @@ RA.debug = true;
 		renderItemDesc: function(renderedItem, elementObject, data) {
 			var descTxt = elementObject[data.options.display.descriptionProperty];
  			if(descTxt)
-				return $(data.options.display.description).text(descTx).appendTo(renderedItem);
+				return $(data.options.display.description).text(descTxt).appendTo(renderedItem);
 			else
 				return false;
 		},
@@ -197,14 +199,14 @@ RA.debug = true;
 	 		propertyFormat: '[%s{property}]'
 	 	},
 	 	display: {														// display configuration
-	 		elementClass: 'selected_element',							// the class added to a single element rendered											 	
-	 		containerClass: 'selectable_container',								// the class to be applied to the container upon initialization
+	 		elementClass: 'selected-element',							// the class added to a single element rendered											 	
+	 		containerClass: 'selectable-container',								// the class to be applied to the container upon initialization
  		
- 			innerContainer: '<div class="inner_selectable_container"></div>',	// the inner container html which will contain the rendered items
- 			singleItem: '<div class="single_item"></div>',						// the inner single element html (each inserted html will be appended to it)
- 			title: '<span class="single_item_title"></div>',					// how to build the title tag Note: overwritable by renderItemTitle option
- 			deselectLink: '<span class="single_item_deselect close">&times;</span>',		// html to build the "close link" which deselects an element
- 			description: '<span class="single_item_desc"></span>',				// false means hide description. 	
+ 			innerContainer: '<div class="inner-selectable-container"></div>',	// the inner container html which will contain the rendered items
+ 			singleItem: '<div class="single-item"></div>',						// the inner single element html (each inserted html will be appended to it)
+ 			title: '<span class="single-item-title"></div>',					// how to build the title tag Note: overwritable by renderItemTitle option
+ 			deselectLink: '<span class="single-item-deselect close">&times;</span>',		// html to build the "close link" which deselects an element
+ 			description: '<span class="single-item-desc"></span>',				// false means hide description. 	
  			descriptionProperty: 'desc',										// property name to be used as description
  			/* Overwritable Rendering Methods */	
 			/* In all those methods, this references the cointaner element upon which the plugin has been called */
@@ -249,16 +251,16 @@ RA.debug = true;
 		insert: function(elementObject) {
 			var data = this.data(pluginName);
 			// check limits
-			if((data.options.limitElements) && (data.collection.length >= data.options.limitElements))
+			var element_to_remove = null;
+			// Check if we need to overwrite an element or block the insertion in case it is set a limit for the # of elements selected
+			if(implementation_methods.isFull(data))
 			{
-				if(!data.options.unique || (data.collection.index(elementObject) == null)) {// if it is of type unique we must check if the element is already present
-					if(data.options.limitMode == 'overwrite_last')
-						this[pluginName]('removeElement', data.collection.at(data.collection.length - 1));
-					else if(data.options.limitMode == 'remove_first')
-						this[pluginName]('removeElement', data.collection.at(0));
-					else // no action
-						return this;
-				}
+				if(data.options.limitMode == 'overwrite_last')
+					element_to_remove = data.collection.at(data.collection.length - 1);
+				else if(data.options.limitMode == 'remove_first')
+					element_to_remove = data.collection.at(0);
+				else // no action
+					return this;
 			}
 
 			this.trigger(pluginName+".beforeInsert", [elementObject, data]);
@@ -271,8 +273,9 @@ RA.debug = true;
 				elementObject.meta._prefix = implementation_methods.interpolatePrefix(data.options.hiddenInputs.namePrefix, elementObject);
 				
 				this.trigger(pluginName+".beforeRenderItem", [elementObject, data]);
-					var appendedDomObject = data.options.display.renderItem.apply(this, [elementObject, data]);
+				var appendedDomObject = data.options.display.renderItem.apply(this, [elementObject, data]);
 				this.trigger(pluginName+".afterRenderItem", [appendedDomObject, elementObject, data]);
+				
 				implementation_methods.renderHiddenInputs(appendedDomObject, elementObject, data);
 
 				if(data.options.deselect) {
@@ -282,13 +285,16 @@ RA.debug = true;
 
 				elementObject.meta._renderedItem = appendedDomObject;
 				this.trigger(pluginName+".beforeAppendItem", [appendedDomObject, elementObject, data]);
-					data.options.display.appendItem.apply(this, [appendedDomObject, elementObject, data]);
+				data.options.display.appendItem.apply(this, [appendedDomObject, elementObject, data]);
 				this.trigger(pluginName+".afterAppendItem", [appendedDomObject, elementObject, data]);
 				// event callback
 				this.trigger(pluginName+".afterInsert", [elementObject, appendedDomObject, data]);
 
 				if(data.initialized && data.options.display.animation && data.options.display.animation.elementIn)
 					data.options.display.animation.elementIn(appendedDomObject, elementObject, data);
+
+				if(element_to_remove)
+					this[pluginName]('removeElement', element_to_remove);
 			} 
 			return this;			
 		},
@@ -343,7 +349,9 @@ RA.debug = true;
 		},
 		getValues: function() { var data = this.data(pluginName); return data.collection.getValues(); },
 		getLabels: function() { var data = this.data(pluginName); return data.collection.getLabels(); },
-		getPairs: function() { var data = this.data(pluginName); return data.collection.getPairs(); }
+		getPairs: function() { var data = this.data(pluginName); return data.collection.getPairs(); },
+		isEmpty: function() { var data = this.data(pluginName); return data.collection.isEmpty(); },
+		isFull: function() { var data = this.data(pluginName); return implementation_methods.isFull(data); }
 	} // var methods
 	
 $.fn[pluginName] = function( method ) {

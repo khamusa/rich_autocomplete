@@ -1,83 +1,49 @@
-/* RICH AUTOCOMPLETE STYLES */
-.ra-display {
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  border: 1px solid #cccccc;
-  background: #efefef;
-  background: -moz-linear-gradient(top, #f9f9f9 0%, #efefef 100%);
-  /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f9f9f9), color-stop(100%, #efefef));
-  /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #f9f9f9 0%, #efefef 100%);
-  /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #f9f9f9 0%, #efefef 100%);
-  /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #f9f9f9 0%, #efefef 100%);
-  /* IE10+ */
-  background: linear-gradient(to bottom, #f9f9f9 0%, #efefef 100%);
-  /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#efefef',GradientType=0 );
-  /* IE6-9 */
-  display: none;
+.rich-autocomplete-wrapper {
+  border: 1px solid #ccc;
 }
 
-.ra-display .ra-selected-label {
- 
-}
-
-
-.ra-display .ra-selected-item {
+.rich-autocomplete-wrapper .single-item {
+  border: 1px solid #ccc;
+  padding: 5px;
+  margin: 3px;
   position: relative;
-  
-  padding: 3px 7px;
-  margin: 2px 3px 3px;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
-  border: 1px solid #cccccc;
-  background: #fff;
-  height: 20px;
-  
 }
 
-.ra-display .ra-selected-with-description {
-  height: 35px;
-}
-
-.ra-single-display, .close { cursor: pointer; }
-
-.ra-display .close {
-  float: left;
-  padding: 0px 4px;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  border: 1px solid #cccccc;
-  font-weight: bold;
-  margin: -1px 3px 0 -1px;
-}
-
-.ra-display .ra-selected-with-description .close {
-  margin: 3px 3px 2px 2px;  
-  padding: 3px 4px;
-  
-}
-
-.ra-display .close:hover {
-  background: #eee;
-}
-
-.ui-autocomplete .ra-menu-desc, .ra-display .ra-selected-desc  {
-  font-size: 0.9em;
-  color: #777;
-  margin-top: -3px;
+.rich-autocomplete-wrapper .single-item .single-item-title {
   display: block;
-  text-decoration: italic;
+  margin-left: 20px;
 }
 
-input.ra-additional-input, select.ra-additional-input {
-  float: right;
-  margin: 0px;
-  width: 45px;
+.rich-autocomplete-wrapper .single-item .single-item-desc {
+  color: #999;
+  font-size: 0.9em;
+  display: block;
+  margin-left: 20px;
+  font-style: italic;
 }
-select.ra-additional-input {
-  width: auto;
+
+.rich-autocomplete-wrapper .single-item .single-item-deselect {
+  position: absolute;
+  padding: 1px 4px;
+  top: 50%;
+  left: 4px;
+  margin-top: -10px;
+  background-color: #eee;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #666;
+}
+
+.rich-autocomplete-wrapper .single-item .single-item-deselect:hover {
+  color: #000;
+  background-color: #ddd;
+}
+
+.rich-autocomplete-wrapper .ra-autocomplete-input {
+  margin: 3px;
+    padding: 5px;
+}
+
+.rich-autocomplete-wrapper .single-item .additional-input {
+  float: right; margin: 0 0 0 3px;
 }
